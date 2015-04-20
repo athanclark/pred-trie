@@ -1,6 +1,5 @@
 module Data.Trie.PredSpec (main, spec) where
 
-import Data.Trie.Pred
 
 import Test.Hspec
 import Test.QuickCheck
