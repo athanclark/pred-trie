@@ -7,6 +7,8 @@ module Data.Trie.Pred.Unified.Tail
   , lookup
   , merge
   , areDisjoint
+  , litSingletonTail
+  , litExtrudeTail
   ) where
 
 import Prelude hiding (lookup)
@@ -30,21 +32,16 @@ data UPTrie t x where
 -- | Overwrites when similar, leaves untouched when not
 merge :: (Eq t) => UPTrie t x -> UPTrie t x -> UPTrie t x
 merge xx@(UMore t mx xs) yy@(UMore p my ys)
-  | t == p = UMore p my $ foldr go [] $ xs ++ ys
+  | t == p = UMore p my $ sort $ xs ++ ys
   | otherwise = xx
-  where
-    go :: (Eq t) => UPTrie t x -> [UPTrie t x] -> [UPTrie t x]
-    go a [] = [a]
-    go a (b:bs) | areDisjoint a b =       a : b : bs
-                | otherwise       = (merge a b) : bs
 merge xx@(UPred t q mrx xrs) yy@(UPred p w mry yrs)
-  | t == p = yy
-  | otherwise = xx
-merge xx@(UMore t mx xs) yy@(UPred p w mrx xrs)
   | t == p = yy -- predicate children are incompatible
   | otherwise = xx
+merge xx@(UMore t mx xs) yy@(UPred p w mrx xrs)
+  | t == p = yy -- rightward bias
+  | otherwise = xx
 merge xx@(UPred t q mrx xrs) yy@(UMore p my ys)
-  | t == p = yy
+  | t == p = yy -- rightward bias
   | otherwise = xx
 
 
@@ -74,7 +71,32 @@ getFirst (Nothing:xs) = getFirst xs
 getFirst (Just x :xs) = Just x
 
 
-buildLitSingletonTail :: NonEmpty t -> x -> UPTrie t x
-buildLitSingletonTail (t:|[]) x = UMore t (Just x) []
-buildLitSingletonTail (t:|ts) x = UMore t Nothing  [buildLitSingletonTail (NE.fromList ts) x]
+litSingletonTail :: NonEmpty t -> x -> UPTrie t x
+litSingletonTail (t:|[]) x = UMore t (Just x) []
+litSingletonTail (t:|ts) x = UMore t Nothing  [buildLitSingletonTail (NE.fromList ts) x]
+
+
+litExtrudeTail :: [t] -> UPTrie t x -> UPTrie t x
+litExtrudeTail [] r = r
+litExtrudeTail (t:ts) r = UMore t Nothing [litExtrudeTail ts r]
+
+
+-- also does a non-deterministic merge - make sure your nodes are disjoint & clean
+sort :: (Eq t) => [UPTrie t x] -> [UPTrie t x]
+sort = foldr insert []
+  where
+    insert :: (Eq t) => UPTrie t x -> [UPTrie t x] -> [UPTrie t x]
+    insert r [] = [r]
+    insert x@(UMore t _ _) (y@(UMore p _ _):rs)
+      | t == p = x : rs
+      | otherwise = x : y : rs
+    insert x@(UMore t _ _) (y@(UPred p _ _ _):rs)
+      | t == p = x : rs
+      | otherwise = x : y : rs
+    insert x@(UPred t _ _ _) (y@(UPred p _ _ _):rs)
+      | t == p = x : rs -- basis
+      | otherwise = x : y : rs
+    insert x@(UPred t _ _ _) (y@(UMore p _ _):rs)
+      | t == p = insert x rs
+      | otherwise = y : insert x rs
 
