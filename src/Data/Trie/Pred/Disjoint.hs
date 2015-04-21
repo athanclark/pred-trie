@@ -30,3 +30,17 @@ lookup ts (Rooted _ xs) = getFirst $ map (ND.lookup $ NE.fromList ts) xs
     getFirst [] = Nothing
     getFirst (Nothing:xs) = getFirst xs
     getFirst (Just x :xs) = Just x
+
+
+litSingleton :: [t] -> x -> RDPTrie p t x
+litSingleton [] x = Rooted (Just x) []
+litSingleton ts x = Rooted Nothing [ND.litSingletonTail (NE.fromList ts) x]
+
+
+litExtrude :: [t] -> RDPTrie p t x -> RDPTrie p t x
+litExtrude [] r = r
+litExtrude (t:[]) (Rooted mx xs) = Rooted Nothing [DMore t mx xs]
+litExtrude ts (Rooted mx xs) = Rooted Nothing [ND.litExtrudeTail (init ts) $
+                                                 DMore (last ts) mx xs
+                                              ]
+

@@ -9,11 +9,12 @@ module Data.Trie.Pred.Unified.Tail
   , areDisjoint
   , litSingletonTail
   , litExtrudeTail
+  , sort
   ) where
 
 import Prelude hiding (lookup)
-import Data.List.NonEmpty hiding (map)
-import Data.List.NonEmpty as NE hiding (map)
+import Data.List.NonEmpty hiding (map, sort)
+import Data.List.NonEmpty as NE hiding (map, sort)
 
 
 
@@ -73,7 +74,7 @@ getFirst (Just x :xs) = Just x
 
 litSingletonTail :: NonEmpty t -> x -> UPTrie t x
 litSingletonTail (t:|[]) x = UMore t (Just x) []
-litSingletonTail (t:|ts) x = UMore t Nothing  [buildLitSingletonTail (NE.fromList ts) x]
+litSingletonTail (t:|ts) x = UMore t Nothing  [litSingletonTail (NE.fromList ts) x]
 
 
 litExtrudeTail :: [t] -> UPTrie t x -> UPTrie t x

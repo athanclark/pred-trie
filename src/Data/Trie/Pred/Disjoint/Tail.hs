@@ -9,6 +9,7 @@ module Data.Trie.Pred.Disjoint.Tail
   , areDisjoint
   , litSingletonTail
   , litExtrudeTail
+  , sort
   ) where
 
 import Prelude hiding (lookup)
@@ -73,10 +74,10 @@ getFirst (Just x :xs) = Just x
 
 litSingletonTail :: NonEmpty t -> x -> DPTrie p t x
 litSingletonTail (t:|[]) x = DMore t (Just x) []
-litSingletonTail (t:|ts) x = DMore t Nothing  [buildLitSingletonTail (NE.fromList ts) x]
+litSingletonTail (t:|ts) x = DMore t Nothing  [litSingletonTail (NE.fromList ts) x]
 
 
-litExtrudeTail :: [t] -> DPTrie t x -> DPTrie t x
+litExtrudeTail :: [t] -> DPTrie p t x -> DPTrie p t x
 litExtrudeTail [] r = r
 litExtrudeTail (t:ts) r = DMore t Nothing [litExtrudeTail ts r]
 
