@@ -5,6 +5,7 @@ module Data.Trie.Pred.Unified
   , lookupNearestParent
   , litSingleton
   , litExtrude
+  , module Data.Trie.Pred.Unified.Tail
   ) where
 
 import Prelude hiding (lookup)
