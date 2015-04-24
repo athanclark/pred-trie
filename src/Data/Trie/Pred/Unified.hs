@@ -22,7 +22,7 @@ instance (Eq t) => Monoid (RUPTrie t x) where
 
 merge :: (Eq t) => RUPTrie t x -> RUPTrie t x -> RUPTrie t x
 merge (Rooted mx xs) (Rooted my ys) =
-  Rooted my $ foldr go [] $ xs ++ ys
+  Rooted (getLast $ Last mx <> Last my) $ NU.sort $ foldr go [] $ xs ++ ys
   where
     go :: (Eq t) => UPTrie t x -> [UPTrie t x] -> [UPTrie t x]
     go a [] = [a]
