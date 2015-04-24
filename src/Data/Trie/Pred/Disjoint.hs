@@ -1,6 +1,15 @@
-module Data.Trie.Pred.Disjoint where
+module Data.Trie.Pred.Disjoint
+  ( RDPTrie (..)
+  , merge
+  , lookup
+  , lookupNearestParent
+  , litSingleton
+  , litExtrude
+  , module Data.Trie.Pred.Disjoint.Tail
+  ) where
 
-import Data.Trie.Pred.Disjoint.Tail
+import Prelude hiding (lookup)
+import Data.Trie.Pred.Disjoint.Tail hiding (lookup, lookupNearestParent, merge)
 import qualified Data.Trie.Pred.Disjoint.Tail as ND
 import Data.Monoid
 import qualified Data.List.NonEmpty as NE
@@ -24,12 +33,17 @@ merge (Rooted mx xs) (Rooted my ys) =
 
 lookup :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
 lookup [] (Rooted mx _) = mx
-lookup ts (Rooted _ xs) = getFirst $ map (ND.lookup $ NE.fromList ts) xs
-  where
-    getFirst :: [Maybe a] -> Maybe a
-    getFirst [] = Nothing
-    getFirst (Nothing:xs) = getFirst xs
-    getFirst (Just x :xs) = Just x
+lookup ts (Rooted _ xs) = firstJust $ map (ND.lookup $ NE.fromList ts) xs
+
+lookupNearestParent :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
+lookupNearestParent [] (Rooted mx _) = mx
+lookupNearestParent ts (Rooted mx xs) =
+  getFirst $ (First $ firstJust $ map (ND.lookupNearestParent $ NE.fromList ts) xs) <> (First mx)
+
+firstJust :: [Maybe a] -> Maybe a
+firstJust [] = Nothing
+firstJust (Nothing:xs) = firstJust xs
+firstJust (Just x :xs) = Just x
 
 
 litSingleton :: [t] -> x -> RDPTrie p t x

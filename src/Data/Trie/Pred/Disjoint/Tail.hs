@@ -5,6 +5,7 @@
 module Data.Trie.Pred.Disjoint.Tail
   ( DPTrie (..)
   , lookup
+  , lookupNearestParent
   , merge
   , areDisjoint
   , litSingletonTail
@@ -13,8 +14,8 @@ module Data.Trie.Pred.Disjoint.Tail
   ) where
 
 import Prelude hiding (lookup)
-import Data.List.NonEmpty hiding (map)
-import Data.List.NonEmpty as NE hiding (map)
+import Data.List.NonEmpty hiding (map, sort)
+import Data.List.NonEmpty as NE hiding (map, sort)
 
 
 
@@ -57,19 +58,39 @@ lookup :: Eq t => NonEmpty t -> DPTrie p t x -> Maybe x
 lookup (t:|ts) (DMore t' mx xs)
   | t == t' = case ts of
     [] -> mx
-    _  -> getFirst $ map (lookup $ NE.fromList ts) xs
+    _  -> firstJust $ map (lookup $ NE.fromList ts) xs
   | otherwise = Nothing
 lookup (t:|ts) (DPred _ p mrx xrs) =
   p t >>=
     \r -> case ts of
       [] -> ($ r) <$> mrx
-      _  -> ($ r) <$> (getFirst $ map (lookup $ NE.fromList ts) xrs)
+      _  -> ($ r) <$> (firstJust $ map (lookup $ NE.fromList ts) xrs)
 
 
-getFirst :: [Maybe a] -> Maybe a
-getFirst [] = Nothing
-getFirst (Nothing:xs) = getFirst xs
-getFirst (Just x :xs) = Just x
+lookupNearestParent :: Eq t => NonEmpty t -> DPTrie p t x -> Maybe x
+lookupNearestParent tss@(t:|ts) trie@(DMore t' mx xs) = case lookup tss trie of
+  Nothing -> if t == t'
+               then case ts of
+                      [] -> mx -- redundant; should have successful lookup
+                      _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xs of
+                              Nothing -> mx
+                              justr   -> justr
+               else Nothing
+  justr -> justr
+lookupNearestParent tss@(t:|ts) trie@(DPred t' p mrx xrs) = case lookup tss trie of
+  Nothing -> p t >>=
+               \r -> case ts of
+                        [] -> ($ r) <$> mrx -- redundant; should have successful lookup
+                        _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xrs of
+                                Nothing -> ($ r) <$> mrx
+                                justr   -> ($ r) <$> justr
+  justr -> justr
+
+
+firstJust :: [Maybe a] -> Maybe a
+firstJust [] = Nothing
+firstJust (Nothing:xs) = firstJust xs
+firstJust (Just x :xs) = Just x
 
 
 litSingletonTail :: NonEmpty t -> x -> DPTrie p t x
@@ -81,3 +102,19 @@ litExtrudeTail :: [t] -> DPTrie p t x -> DPTrie p t x
 litExtrudeTail [] r = r
 litExtrudeTail (t:ts) r = DMore t Nothing [litExtrudeTail ts r]
 
+
+sort :: (Eq p, Eq t) => [DPTrie p t x] -> [DPTrie p t x]
+sort = foldr insert []
+  where
+    insert :: (Eq p, Eq t) => DPTrie p t x -> [DPTrie p t x] -> [DPTrie p t x]
+    insert r [] = [r]
+    insert x@(DMore t _ _) (y@(DMore p _ _):rs)
+      | t == p = x : rs
+      | otherwise = x : y : rs
+    insert x@(DMore t _ _) (y@(DPred p _ _ _):rs) =
+        x : y : rs
+    insert x@(DPred t _ _ _) (y@(DPred p _ _ _):rs)
+      | t == p = x : rs -- basis
+      | otherwise = x : y : rs
+    insert x@(DPred t _ _ _) (y@(DMore p _ _):rs) =
+        y : insert x rs
