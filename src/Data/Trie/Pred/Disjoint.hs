@@ -28,8 +28,8 @@ merge (Rooted mx xs) (Rooted my ys) =
   where
     go :: (Eq p, Eq t) => DPTrie p t x -> [DPTrie p t x] -> [DPTrie p t x]
     go a [] = [a]
-    go a (b:bs) | ND.areDisjoint a b =          a : b : bs
-                | otherwise          = (ND.merge a b) : bs
+    go a (b:bs) | ND.areDisjoint a b =        a : b : bs
+                | otherwise          = ND.merge a b : bs
 
 lookup :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
 lookup [] (Rooted mx _) = mx
@@ -38,7 +38,7 @@ lookup ts (Rooted _ xs) = firstJust $ map (ND.lookup $ NE.fromList ts) xs
 lookupNearestParent :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
 lookupNearestParent [] (Rooted mx _) = mx
 lookupNearestParent ts (Rooted mx xs) =
-  getFirst $ (First $ firstJust $ map (ND.lookupNearestParent $ NE.fromList ts) xs) <> (First mx)
+  getFirst $ (First $ firstJust $ map (ND.lookupNearestParent $ NE.fromList ts) xs) <> First mx
 
 firstJust :: [Maybe a] -> Maybe a
 firstJust [] = Nothing
@@ -53,7 +53,7 @@ litSingleton ts x = Rooted Nothing [ND.litSingletonTail (NE.fromList ts) x]
 
 litExtrude :: [t] -> RDPTrie p t x -> RDPTrie p t x
 litExtrude [] r = r
-litExtrude (t:[]) (Rooted mx xs) = Rooted Nothing [DMore t mx xs]
+litExtrude [t] (Rooted mx xs) = Rooted Nothing [DMore t mx xs]
 litExtrude ts (Rooted mx xs) = Rooted Nothing [ND.litExtrudeTail (init ts) $
                                                  DMore (last ts) mx xs
                                               ]

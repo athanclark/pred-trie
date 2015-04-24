@@ -14,7 +14,6 @@ module Data.Trie.Pred.Disjoint.Tail
   ) where
 
 import Prelude hiding (lookup)
-import Data.List.NonEmpty hiding (map, sort)
 import Data.List.NonEmpty as NE hiding (map, sort)
 
 
@@ -39,8 +38,8 @@ merge xx@(DMore t mx xs) yy@(DMore p my ys)
   where
     go :: (Eq p, Eq t) => DPTrie p t x -> [DPTrie p t x] -> [DPTrie p t x]
     go a [] = [a]
-    go a (b:bs) | areDisjoint a b =       a : b : bs
-                | otherwise       = (merge a b) : bs
+    go a (b:bs) | areDisjoint a b =     a : b : bs
+                | otherwise       = merge a b : bs
 merge xx@(DPred t q mrx xrs) yy@(DPred p w mry yrs)
   | t == p = yy
   | otherwise = xx
@@ -64,7 +63,7 @@ lookup (t:|ts) (DPred _ p mrx xrs) =
   p t >>=
     \r -> case ts of
       [] -> ($ r) <$> mrx
-      _  -> ($ r) <$> (firstJust $ map (lookup $ NE.fromList ts) xrs)
+      _  -> ($ r) <$> firstJust (map (lookup $ NE.fromList ts) xrs)
 
 
 lookupNearestParent :: Eq t => NonEmpty t -> DPTrie p t x -> Maybe x
