@@ -14,7 +14,8 @@ import Data.Monoid
 import qualified Data.List.NonEmpty as NE
 
 
-data RUPTrie t x = Rooted (Maybe x) [UPTrie t x]
+data RUPTrie t x = Rooted { root :: Maybe x
+                          , children :: [UPTrie t x] }
 
 instance (Eq t) => Monoid (RUPTrie t x) where
   mempty = Rooted Nothing []

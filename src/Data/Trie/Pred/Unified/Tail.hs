@@ -48,10 +48,10 @@ merge xx@(UPred t q mrx xrs) yy@(UMore p my ys)
 
 
 areDisjoint :: (Eq t) => UPTrie t x -> UPTrie t x -> Bool
-areDisjoint (UMore t _ _)    (UMore p _ _)    = t == p
-areDisjoint (UPred t _ _ _)  (UPred p _ _ _)  = t == p
-areDisjoint (UPred t _ _ _)  (UMore p _ _)    = t == p
-areDisjoint (UMore t _ _)    (UPred p _ _ _)  = t == p
+areDisjoint (UMore t _ _)    (UMore p _ _)    = not $ t == p
+areDisjoint (UPred t _ _ _)  (UPred p _ _ _)  = not $ t == p
+areDisjoint (UPred t _ _ _)  (UMore p _ _)    = not $ t == p
+areDisjoint (UMore t _ _)    (UPred p _ _ _)  = not $ t == p
 
 
 lookup :: Eq t => NonEmpty t -> UPTrie t x -> Maybe x
