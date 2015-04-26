@@ -15,7 +15,7 @@ module Data.Trie.Pred.Hetero.Unified.Tail
 
 import Prelude hiding (lookup)
 import Data.List.NonEmpty as NE hiding (map, sort)
--- import Data.Bifunctor (bimap)
+import Control.Applicative
 
 
 data HUPTrie t a b where

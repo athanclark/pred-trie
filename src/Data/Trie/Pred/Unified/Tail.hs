@@ -15,6 +15,7 @@ module Data.Trie.Pred.Unified.Tail
 
 import Prelude hiding (lookup)
 import Data.List.NonEmpty as NE hiding (map, sort)
+import Control.Applicative
 
 
 

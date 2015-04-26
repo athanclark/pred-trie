@@ -13,6 +13,7 @@ import Data.Trie.Pred.Hetero.Unified.Tail hiding (lookup, lookupNearestParent, m
 import qualified Data.Trie.Pred.Hetero.Unified.Tail as NU
 import Data.Monoid
 import qualified Data.List.NonEmpty as NE
+import Control.Applicative
 
 
 data RHUPTrie t a b = Rooted { root :: Maybe a
