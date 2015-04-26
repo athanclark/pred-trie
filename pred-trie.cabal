@@ -1,5 +1,5 @@
 Name:                   pred-trie
-Version:                0.0.9
+Version:                0.0.10
 Author:                 Athan Clark <athan.clark@gmail.com>
 Maintainer:             Athan Clark <athan.clark@gmail.com>
 License:                BSD3
@@ -23,7 +23,6 @@ Library
                        -- Data.Trie.Pred.Hetero.Disjoint.Tail
   Build-Depends:        base >= 4 && < 5
                       , semigroups
-                      , bifunctors
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0
