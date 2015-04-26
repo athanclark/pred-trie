@@ -4,6 +4,8 @@
 
 module Data.Trie.Pred.Unified.Tail
   ( UPTrie (..)
+  , showTail
+  , assignLit
   , lookup
   , lookupNearestParent
   , merge
@@ -30,6 +32,17 @@ data UPTrie t x where
         -> [UPTrie t (r -> x)]
         -> UPTrie t x
 
+showTail :: (Show t) => UPTrie t x -> String
+showTail (UMore t mx xs) = "(UMore " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
+showTail (UPred t p mx xs) = "(UPred " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
+
+assignLit :: (Eq t) => NonEmpty t -> Maybe x -> UPTrie t x -> UPTrie t x
+assignLit (t:|ts) mx yy@(UMore p my ys)
+  | t == p = case ts of
+               [] -> UMore p mx ys
+               _  -> UMore p my $ map (assignLit (NE.fromList ts) mx) ys
+  | otherwise = yy
+assignLit _ _ yy@(UPred _ _ _ _) = yy
 
 -- | Overwrites when similar, leaves untouched when not
 merge :: (Eq t) => UPTrie t x -> UPTrie t x -> UPTrie t x
