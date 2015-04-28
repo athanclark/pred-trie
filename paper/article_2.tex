@@ -1,0 +1,258 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.3 (9/9/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead{} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-10mm}\fontsize{18pt}{10pt}\selectfont\textbf{Predicative Tries}} % Article title
+
+\author{
+\large
+\textsc{Athan Clark} \\ % Your name
+\normalsize Unaffiliated \\ % Your institution
+\normalsize \href{mailto:athan.clark@gmail.com}{athan.clark@gmail.com} % Your email address
+\vspace{-5mm}
+}
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+Traditional lookup tables and tries are limited to comparing paths \textit{literally} -
+a path must match exactly with the tag accompanying content.
+Here we present a simple, but useful notion - \textit{predicative} lookup tables,
+that give us \textit{reflection} in our lookups - the ability to orient
+the content of a lookup based on the result of our condition.
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+\section*{Background}
+
+Rose trees \cite{heller} are a classic example of an elegant, purely functional data strucure.
+To reccollect, rose trees are, constructively, very similar to lists. Traditionally,
+lists are represented by a union type between a \([]\) unit data constructor, and
+a \(:\) data constructor, with a type signature
+\((:) :: \alpha \rightarrow [\alpha] \rightarrow [\alpha]\). For verbosity, here
+is the traditional implementation:
+
+\begin{align*}
+[\alpha] &= \alpha : [\alpha]\\
+         & \enspace | \enspace []
+\end{align*}
+
+The \(Maybe\) data type, popular with Haskell \cite{haskell10} developers, has a similar shape:
+
+\begin{align*}
+Maybe \enspace \alpha &= Just \enspace \alpha\\
+                      & \enspace | \enspace Nothing
+\end{align*}
+
+From this, we can refactor the traditional list design into one with a
+more explicit possibly nonexistent tail:
+
+\begin{align*}
+[\alpha]' &= \alpha :' (Maybe \enspace [\alpha]')
+\end{align*}
+
+If we substitute \(RTree\) for \([]'\), and replace \(Maybe\) with a \textit{set}
+of tails, we can see the corrospondance to lists:
+
+\begin{align*}
+RTree \enspace \alpha &= More \enspace \alpha \enspace [RTree \enspace \alpha]
+\end{align*}
+
+
+%------------------------------------------------
+
+\section*{Trivial Trie}
+
+We model our lookup table after a trivial trie \cite{trie}, where steps down the path are
+merely constructor elements of our rose tree, and each element of the tree is
+paired with a tag implementing equality:
+
+\begin{align*}
+Trie \enspace t \enspace \alpha &= RTree \enspace (t,\enspace Maybe \enspace \alpha)
+\end{align*}
+
+Now we have potential contents and a path to find them. Implementing a \(lookup\)
+function is trivial:
+
+\begin{flalign*}
+&lookup :: (Eq \enspace t) \Rightarrow [t] \rightarrow Trie \enspace t \enspace a \rightarrow Maybe \enspace a \\
+&lookup \enspace [] \enspace _ = \enspace Nothing \\
+&lookup \enspace (t : ts) \enspace (More \enspace (t', \enspace mx) \enspace xs) \\
+&\quad \quad | \enspace t \equiv t' = \mathrm{case} \enspace ts \enspace \mathrm{of} \\
+&\quad \quad \quad [] \rightarrow mx \\
+&\quad \quad \quad \_ \rightarrow firstJust \enspace \$ \enspace map \enspace (lookup \enspace ts) \enspace xs \\
+&\quad \quad | \enspace otherwise = Nothing \\
+&\quad where \\
+&\quad firstJust :: [Maybe \enspace \alpha] \rightarrow Maybe \enspace \alpha \\
+&\quad firstJust \enspace [] = Nothing \\
+&\quad firstJust \enspace (Nothing : xs) = firstJust \enspace xs \\
+&\quad firstJust \enspace ((Just \enspace x) : xs) = Just \enspace x \\
+\end{flalign*}
+
+The implementation is fairly simple - walk down the tree, testing for equality for
+each chunk of the path, and if the endpoint is found, return the possible contents,
+otherwise fail.
+
+%------------------------------------------------
+\section*{Predicative Trie}
+
+Existential types have a bad rap - they quantify types scope,
+forbidding us from realizing their virtue without knowing it in advance.
+Using GHC's \textit{ExistentialTypes} \cite{exhaskell} language extension, we can create such
+attrocities without obligation.
+
+The predicates we use in our lookup tables will leverage such freedom. Each
+predicate will be a \textit{conditional mutation} of our tag type \(t\),
+to \textbf{some} \(r\),
+such that our predicates will have a type \(\forall r. t \rightarrow Maybe \enspace r\) -
+a boolean condition that generates a new value, of some unknown type.
+
+What might we do with such type? For one thing, we may \textit{prefix} the contents
+of the trie by \(r\) to give us the reflection we desire. Indeed, this is what we do by giving
+a new constructor for our rose trees:
+
+\begin{align*}
+PTrie \enspace t \enspace \alpha &= PMore \\
+                                 & \quad \quad \quad (t,\quad \quad \quad \quad \quad \quad Maybe \enspace \alpha) \\
+                                 & \quad \quad \quad [PTrie \enspace t \enspace \alpha] \\
+                                 & \enspace | \enspace PPred \enspace \forall r. \\
+                                 & \quad \quad \quad (t \rightarrow Maybe \enspace r, \enspace Maybe \enspace (r \rightarrow \alpha))\\
+                                 & \quad \quad \quad [PTrie \enspace t \enspace (r \rightarrow \alpha)]
+\end{align*}
+
+This may look strange, but indeed it is useful. We may now adjust our lookup
+function above to reciprocate the results of our predicate:
+
+\begin{flalign*}
+&lookup :: (Eq \enspace t) \Rightarrow [t] \rightarrow Trie \enspace t \enspace a \rightarrow Maybe \enspace a \\
+&lookup \enspace [] \enspace _ = \enspace Nothing \\
+&lookup \enspace (t : ts) \enspace (PMore \enspace (t', \enspace mx) \enspace xs) \\
+&\quad \quad | \enspace t \equiv t' = \mathrm{case} \enspace ts \enspace \mathrm{of} \\
+&\quad \quad \quad [] \rightarrow mx \\
+&\quad \quad \quad \_ \rightarrow firstJust \enspace \$ \enspace map \enspace (lookup \enspace ts) \enspace xs \\
+&\quad \quad | \enspace otherwise = Nothing \\
+&lookup \enspace (t : ts) \enspace (PPred \enspace (p, \enspace mrx) \enspace xrs) = \\
+&\quad \quad p \enspace t \enspace \gg =\\
+&\quad \quad \quad \lambda r. \enspace \mathrm{case} \enspace ts \enspace \mathrm{of} \\
+&\quad \quad \quad \quad [] \rightarrow fmap \enspace (\$ \enspace r) \enspace mrx \\
+&\quad \quad \quad \quad \_ \rightarrow fmap \enspace (\$ \enspace r) \\
+&\quad \quad \quad \quad \quad \quad \quad (firstJust \enspace \$ \enspace map \enspace (lookup \enspace ts) \enspace xrs) \\
+&\quad where \\
+&\quad firstJust :: [Maybe \enspace \alpha] \rightarrow Maybe \enspace \alpha \\
+&\quad firstJust \enspace [] = Nothing \\
+&\quad firstJust \enspace (Nothing : xs) = firstJust \enspace xs \\
+&\quad firstJust \enspace ((Just \enspace x) : xs) = Just \enspace x \\
+\end{flalign*}
+
+In the predicative constructor case, we leverage the monadic / functorial
+behaviour of \(Maybe\), in that the success of the condition pulls the content
+out of \(Just\) and applies it to \(r\), which we then use as a parameter to the
+possible content of \(mrx\) or later content as we walk down the tree.
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+
+\bibitem[K.A. Heller, 2010]{heller}
+FC. Blundell, Y.W. Teh and K.A. Heller (2010).
+\newblock "Bayesian Rose Trees".
+\newblock In the 26th Conference on {\em Uncertainty in Artificial Intelligence}, UIA 2010.
+
+\bibitem[S. Marlow, 2010]{haskell10}
+Simon Marlow, Simon Peyton Jones (2010).
+\newblock The 2010 Haskell Language Report
+
+\bibitem[E. Fredkin, 1960]{trie}
+Edward Fredkin (1960).
+\newblock "Trie Memory".
+\newblock In {\em Communications of the ACM}, doi:10.1145/367390.367400
+
+\bibitem[A. Dijkstra, 2010]{exhaskell}
+Atze Dijkstra (2010).
+\newblock "Existential Haskell".
+
+
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}
+
+\end{document}
