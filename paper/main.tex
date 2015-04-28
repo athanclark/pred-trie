@@ -45,13 +45,6 @@
 \titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
 \titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
 
-\usepackage{fancyhdr} % Headers and footers
-\pagestyle{fancy} % All pages have headers and footers
-\fancyhead{} % Blank out the default header
-\fancyfoot{} % Blank out the default footer
-\fancyhead{} % Custom header text
-\fancyfoot[RO,LE]{\thepage} % Custom footer text
-
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{textcomp}
@@ -60,12 +53,12 @@
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
-\title{\vspace{-10mm}\fontsize{18pt}{10pt}\selectfont\textbf{Predicative Tries}} % Article title
+\title{\vspace{-10mm}\fontsize{16pt}{10pt}\selectfont\textbf{Predicative Tries}} % Article title
 
 \author{
 \large
 \textsc{Athan Clark} \\ % Your name
-\normalsize Unaffiliated \\ % Your institution
+%\normalsize Unaffiliated \\ % Your institution
 \normalsize \href{mailto:athan.clark@gmail.com}{athan.clark@gmail.com} % Your email address
 \vspace{-5mm}
 }
@@ -76,8 +69,6 @@
 \begin{document}
 
 \maketitle % Insert title
-
-\thispagestyle{fancy} % All pages have headers and footers
 
 %----------------------------------------------------------------------------------------
 %	ABSTRACT
@@ -196,7 +187,15 @@ PTrie \enspace t \enspace \alpha &= PMore \\
                                  & \quad \quad \quad [PTrie \enspace t \enspace (r \rightarrow \alpha)]
 \end{align*}
 
-This may look strange, but indeed it is useful. We may now adjust our lookup
+This may look strange, but indeed it is useful. However, there is a major caveat -
+in \textbf{every children set}, \(PPred\) constructors must be \textbf{after}
+\(PMore\) constructors. This is because predicates have a \textit{wider} capture
+range than literal lookups. This is a crucial, yet subtle, prerequisite for correct
+operation. Likewise, we cannot have identical predicates and expect them to behaive
+independently - \textit{all overlapping predicates} will seive down the list of
+child tries - the behaviour is "first come, first serve" with overlapping predicates.
+
+We may now adjust our lookup
 function above to reciprocate the results of our predicate:
 
 \begin{flalign*}

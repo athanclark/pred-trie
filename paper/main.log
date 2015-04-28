@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex 2015.3.28)  27 APR 2015 18:33
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Debian) (preloaded format=pdflatex 2015.3.28)  27 APR 2015 19:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -342,20 +342,9 @@ Package: titlesec 2011/12/15 v2.10.0 Sectioning titles
 (/usr/share/texlive/texmf-dist/tex/latex/titlesec/block.tss
 File: block.tss 2011/12/15
 )
-(/usr/share/texlive/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
-\fancy@headwidth=\skip58
-\f@ncyO@elh=\skip59
-\f@ncyO@erh=\skip60
-\f@ncyO@olh=\skip61
-\f@ncyO@orh=\skip62
-\f@ncyO@elf=\skip63
-\f@ncyO@erf=\skip64
-\f@ncyO@olf=\skip65
-\f@ncyO@orf=\skip66
-)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2013/01/14 v2.14 AMS math features
-\@mathmargin=\skip67
+\@mathmargin=\skip58
 
 For additional information on amsmath, use the `?' option.
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
@@ -405,8 +394,8 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
 \totwidth@=\dimen169
 \lineht@=\dimen170
 \@envbody=\toks24
-\multlinegap=\skip68
-\multlinetaggap=\skip69
+\multlinegap=\skip59
+\multlinetaggap=\skip60
 \mathdisplay@stack=\toks25
 LaTeX Info: Redefining \[ on input line 2665.
 LaTeX Info: Redefining \] on input line 2666.
@@ -504,33 +493,33 @@ Package textcomp Info: Setting ptmj sub-encoding to TS1/4 on input line 340.
 ) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 76.
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 76.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 76.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 69.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 69.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 76.
-LaTeX Font Info:    Try loading font information for T1+pplx on input line 76.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Try loading font information for T1+pplx on input line 69.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pplx.fd
 File: t1pplx.fd 2004/09/06 font definitions for T1/pplx.
 )
-LaTeX Info: Redefining \microtypecontext on input line 76.
+LaTeX Info: Redefining \microtypecontext on input line 69.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -584,7 +573,7 @@ Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \AtBeginShipoutBox=\box59
-Package hyperref Info: Link coloring OFF on input line 76.
+Package hyperref Info: Link coloring OFF on input line 69.
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 
@@ -593,41 +582,41 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count131
 )
-LaTeX Info: Redefining \ref on input line 76.
-LaTeX Info: Redefining \pageref on input line 76.
-LaTeX Info: Redefining \nameref on input line 76.
+LaTeX Info: Redefining \ref on input line 69.
+LaTeX Info: Redefining \pageref on input line 69.
+LaTeX Info: Redefining \nameref on input line 69.
 
 (./main.out) (./main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
-LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <18> not available
-(Font)              Font shape `T1/pplx/b/n' tried instead on input line 79.
-LaTeX Font Info:    Try loading font information for OT1+pplx on input line 79.
+LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <16> not available
+(Font)              Font shape `T1/pplx/b/n' tried instead on input line 72.
+LaTeX Font Info:    Try loading font information for OT1+pplx on input line 72.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pplx.fd
 File: ot1pplx.fd 2004/09/06 font definitions for OT1/pplx.
 )
-LaTeX Font Info:    Try loading font information for OML+zplm on input line 79.
+LaTeX Font Info:    Try loading font information for OML+zplm on input line 72.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omlzplm.fd
 File: omlzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OML/zplm.
 )
-LaTeX Font Info:    Try loading font information for OMS+zplm on input line 79.
+LaTeX Font Info:    Try loading font information for OMS+zplm on input line 72.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omszplm.fd
 File: omszplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMS/zplm.
 )
-LaTeX Font Info:    Try loading font information for OMX+zplm on input line 79.
+LaTeX Font Info:    Try loading font information for OMX+zplm on input line 72.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omxzplm.fd
 File: omxzplm.fd 2002/09/08 Fontinst v1.914 font definitions for OMX/zplm.
 )
-LaTeX Font Info:    Try loading font information for OT1+zplm on input line 79.
+LaTeX Font Info:    Try loading font information for OT1+zplm on input line 72.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1zplm.fd
@@ -638,130 +627,78 @@ Package microtype Info: Loading generic settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 12.50409pt on input line 79.
+(Font)              scaled to size 12.50409pt on input line 72.
 
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 9.37807pt on input line 79.
+(Font)              scaled to size 9.37807pt on input line 72.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 7.29405pt on input line 79.
+(Font)              scaled to size 7.29405pt on input line 72.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 12.50409pt on input line 79.
+(Font)              scaled to size 12.50409pt on input line 72.
 
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 9.37807pt on input line 79.
+(Font)              scaled to size 9.37807pt on input line 72.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 7.29405pt on input line 79.
+(Font)              scaled to size 7.29405pt on input line 72.
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/pplx/m/sc/12'.
 (microtype)             Ignoring protrusion settings for this character.
 LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <10> not available
-(Font)              Font shape `T1/pplx/b/n' tried instead on input line 86.
+(Font)              Font shape `T1/pplx/b/n' tried instead on input line 77.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 106.
+(Font)              scaled to size 10.42007pt on input line 97.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 106.
+(Font)              scaled to size 7.91925pt on input line 97.
 LaTeX Font Info:    Font shape `U/msa/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 106.
+(Font)              scaled to size 6.25204pt on input line 97.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 10.42007pt on input line 106.
+(Font)              scaled to size 10.42007pt on input line 97.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 7.91925pt on input line 106.
+(Font)              scaled to size 7.91925pt on input line 97.
 LaTeX Font Info:    Font shape `U/msb/m/n' will be
-(Font)              scaled to size 6.25204pt on input line 106.
+(Font)              scaled to size 6.25204pt on input line 97.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (12.36398pt too wide) in paragraph at lines 197--197
+Overfull \hbox (12.36398pt too wide) in paragraph at lines 188--188
 [] 
  []
 
 
-Overfull \hbox (20.4863pt too wide) in paragraph at lines 221--221
+Overfull \hbox (20.4863pt too wide) in paragraph at lines 220--220
 [] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 251--254
+Underfull \hbox (badness 10000) in paragraph at lines 250--253
 []\T1/pplx/m/n/10 (+20) Edward Fred-kin (1960).
  []
 
-
-Overfull \vbox (113.06833pt too high) has occurred while \output is active []
-
-
 [2]
-Overfull \vbox (33.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (33.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (32.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (32.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (31.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (31.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (30.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (30.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (29.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (29.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (28.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (28.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (27.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (27.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (26.20007pt too high) has occurred while \output is active []
-
-
-Overfull \vbox (26.20007pt too high) has occurred while \output is active []
-
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 266.
-
-[3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 266.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 265.
+ [3]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 265.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 266.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 266.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 265.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 265.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 0658614AB621D77B2C9DCFB0F04E4818;45.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 266.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 265.
  ) 
 Here is how much of TeX's memory you used:
- 9807 strings out of 493104
- 148742 string characters out of 6136932
- 296952 words of memory out of 5000000
- 12967 multiletter control sequences out of 15000+600000
- 56702 words of font info for 198 fonts, out of 8000000 for 9000
+ 9687 strings out of 493104
+ 147453 string characters out of 6136932
+ 269029 words of memory out of 5000000
+ 12847 multiletter control sequences out of 15000+600000
+ 56925 words of font info for 201 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,10n,43p,257b,515s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,10n,38p,257b,581s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/
@@ -769,7 +706,7 @@ fonts/type1/public/mathpazo/fplmri.pfb></usr/share/texlive/texmf-dist/fonts/typ
 e1/public/fpl/fplrc8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palati
 no/uplb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplr8a.pf
 b></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on main.pdf (3 pages, 87990 bytes).
+Output written on main.pdf (3 pages, 89627 bytes).
 PDF statistics:
  66 PDF objects out of 1000 (max. 8388607)
  53 compressed objects within 1 object stream
