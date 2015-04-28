@@ -54,6 +54,7 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{textcomp}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -143,7 +144,7 @@ merely constructor elements of our rose tree, and each element of the tree is
 paired with a tag implementing equality:
 
 \begin{align*}
-Trie \enspace t \enspace \alpha &= RTree \enspace (t,\enspace Maybe \enspace \alpha)
+  Trie \enspace t \enspace \alpha \enspace &{\raise.17ex\hbox{$\scriptstyle\sim$}} \enspace RTree \enspace (t,\enspace Maybe \enspace \alpha)
 \end{align*}
 
 Now we have potential contents and a path to find them. Implementing a \(lookup\)
@@ -223,6 +224,13 @@ In the predicative constructor case, we leverage the monadic / functorial
 behaviour of \(Maybe\), in that the success of the condition pulls the content
 out of \(Just\) and applies it to \(r\), which we then use as a parameter to the
 possible content of \(mrx\) or later content as we walk down the tree.
+
+\section{Conclusion}
+
+We may now have lookup tables who's contents \textit{interact} with the results of
+mutative acceptor functions. This has many uses, and is critically important
+for \(nested-routes\), a Haskell library for url routing, where parsers are the
+predicative mutator.
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
