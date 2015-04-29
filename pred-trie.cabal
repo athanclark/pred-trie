@@ -17,10 +17,6 @@ Library
                         Data.Trie.Pred.Unified.Tail
                         Data.Trie.Pred.Disjoint
                         Data.Trie.Pred.Disjoint.Tail
-                        Data.Trie.Pred.Hetero.Unified
-                        Data.Trie.Pred.Hetero.Unified.Tail
-                       -- Data.Trie.Pred.Hetero.Disjoint
-                       -- Data.Trie.Pred.Hetero.Disjoint.Tail
   Build-Depends:        base >= 4.6 && < 5
                       , semigroups
 
