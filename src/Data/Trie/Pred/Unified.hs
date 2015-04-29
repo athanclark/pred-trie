@@ -30,6 +30,9 @@ instance (Eq t) => Monoid (RUPTrie t x) where
   mempty = Rooted Nothing []
   mappend = Data.Trie.Pred.Unified.merge
 
+instance (Show t) => Show (RUPTrie t x) where
+  show = showTrie
+
 assignLit :: Eq t => [t] -> Maybe x -> RUPTrie t x -> RUPTrie t x
 assignLit [] mx (Rooted my ys) = Rooted mx ys
 assignLit ts mx (Rooted my ys) = Rooted my $

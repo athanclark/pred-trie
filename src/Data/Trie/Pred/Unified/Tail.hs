@@ -36,6 +36,11 @@ showTail :: (Show t) => UPTrie t x -> String
 showTail (UMore t mx xs) = "(UMore " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
 showTail (UPred t p mx xs) = "(UPred " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
 
+-- | Ignores contents
+instance (Show t) => Show (UPTrie t x) where
+  show = showTail
+
+-- | Assigns a value to literal constructors
 assignLit :: (Eq t) => NonEmpty t -> Maybe x -> UPTrie t x -> UPTrie t x
 assignLit (t:|ts) mx yy@(UMore p my ys)
   | t == p = case ts of
@@ -83,20 +88,20 @@ lookup (t:|ts) (UPred _ p mrx xrs) =
 lookupNearestParent :: Eq t => NonEmpty t -> UPTrie t x -> Maybe x
 lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = case lookup tss trie of
   Nothing -> if t == t'
-               then case ts of
-                      [] -> mx -- redundant; should have successful lookup
-                      _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xs of
-                              Nothing -> mx
-                              justr   -> justr
-               else Nothing
+    then case ts of
+           [] -> mx -- redundant; should have successful lookup
+           _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xs of
+                   Nothing -> mx
+                   justr   -> justr
+    else Nothing
   justr -> justr
 lookupNearestParent tss@(t:|ts) trie@(UPred t' p mrx xrs) = case lookup tss trie of
   Nothing -> p t >>=
-               \r -> case ts of
-                        [] -> ($ r) <$> mrx -- redundant; should have successful lookup
-                        _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xrs of
-                                Nothing -> ($ r) <$> mrx
-                                justr   -> ($ r) <$> justr
+    \r -> case ts of
+            [] -> ($ r) <$> mrx -- redundant; should have successful lookup
+            _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xrs of
+                    Nothing -> ($ r) <$> mrx
+                    justr   -> ($ r) <$> justr
   justr -> justr
 
 
@@ -106,12 +111,12 @@ firstJust [] = Nothing
 firstJust (Nothing:xs) = firstJust xs
 firstJust (Just x :xs) = Just x
 
-
+-- | Create a singleton trie out of literal constructors
 litSingletonTail :: NonEmpty t -> x -> UPTrie t x
 litSingletonTail (t:|[]) x = UMore t (Just x) []
 litSingletonTail (t:|ts) x = UMore t Nothing  [litSingletonTail (NE.fromList ts) x]
 
-
+-- | Push a trie down with literal constructors
 litExtrudeTail :: [t] -> UPTrie t x -> UPTrie t x
 litExtrudeTail [] r = r
 litExtrudeTail (t:ts) r = UMore t Nothing [litExtrudeTail ts r]
