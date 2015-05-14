@@ -2,6 +2,7 @@ module Data.Trie.Pred.Disjoint
   ( RDPTrie (..)
   , merge
   , lookup
+  , lookupWithL
   , lookupNearestParent
   , litSingleton
   , litExtrude
@@ -9,7 +10,7 @@ module Data.Trie.Pred.Disjoint
   ) where
 
 import Prelude hiding (lookup)
-import Data.Trie.Pred.Disjoint.Tail hiding (lookup, lookupNearestParent, merge)
+import Data.Trie.Pred.Disjoint.Tail hiding (lookup, lookupWithL, lookupNearestParent, merge)
 import qualified Data.Trie.Pred.Disjoint.Tail as ND
 import Data.Monoid
 import qualified Data.List.NonEmpty as NE
@@ -35,6 +36,10 @@ lookup :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
 lookup [] (Rooted mx _) = mx
 lookup ts (Rooted _ xs) = firstJust $ map (ND.lookup $ NE.fromList ts) xs
 
+lookupWithL :: (Eq t) => (t -> t) -> [t] -> RDPTrie p t x -> Maybe x
+lookupWithL _ [] (Rooted mx _) = mx
+lookupWithL f ts (Rooted _ xs) = firstJust $ map (ND.lookupWithL f $ NE.fromList ts) xs
+
 lookupNearestParent :: (Eq t) => [t] -> RDPTrie p t x -> Maybe x
 lookupNearestParent [] (Rooted mx _) = mx
 lookupNearestParent ts (Rooted mx xs) =
@@ -57,4 +62,3 @@ litExtrude [t] (Rooted mx xs) = Rooted Nothing [DMore t mx xs]
 litExtrude ts (Rooted mx xs) = Rooted Nothing [ND.litExtrudeTail (init ts) $
                                                  DMore (last ts) mx xs
                                               ]
-

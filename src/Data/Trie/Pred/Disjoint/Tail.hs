@@ -5,6 +5,7 @@
 module Data.Trie.Pred.Disjoint.Tail
   ( DPTrie (..)
   , lookup
+  , lookupWithL
   , lookupNearestParent
   , merge
   , areDisjoint
@@ -66,6 +67,19 @@ lookup (t:|ts) (DPred _ p mrx xrs) =
       [] -> ($ r) <$> mrx
       _  -> ($ r) <$> firstJust (map (lookup $ NE.fromList ts) xrs)
 
+lookupWithL :: Eq t => (t -> t) -> NonEmpty t -> DPTrie p t x -> Maybe x
+lookupWithL f (t:|ts) (DMore t' mx xs)
+  | null ts = if f t == t'
+              then mx
+              else Nothing
+  | otherwise = if t == t'
+                then firstJust $ map (lookupWithL f $ NE.fromList ts) xs
+                else Nothing
+lookupWithL f (t:|ts) (DPred _ p mrx xrs) =
+  p t >>=
+    \r -> case ts of
+      [] -> ($ r) <$> mrx
+      _  -> ($ r) <$> firstJust (map (lookupWithL f $ NE.fromList ts) xrs)
 
 lookupNearestParent :: Eq t => NonEmpty t -> DPTrie p t x -> Maybe x
 lookupNearestParent tss@(t:|ts) trie@(DMore t' mx xs) = case lookup tss trie of

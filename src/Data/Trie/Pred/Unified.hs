@@ -4,6 +4,7 @@ module Data.Trie.Pred.Unified
   , showTrie
   , merge
   , lookup
+  , lookupWithL
   , lookupNearestParent
   , litSingleton
   , litExtrude
@@ -11,7 +12,7 @@ module Data.Trie.Pred.Unified
   ) where
 
 import Prelude hiding (lookup)
-import Data.Trie.Pred.Unified.Tail hiding (lookup, lookupNearestParent, merge, assignLit)
+import Data.Trie.Pred.Unified.Tail hiding (lookup, lookupWithL, lookupNearestParent, merge, assignLit)
 import qualified Data.Trie.Pred.Unified.Tail as NU
 import Data.Monoid
 import Data.Maybe (fromMaybe)
@@ -50,6 +51,10 @@ merge (Rooted mx xs) (Rooted my ys) =
 lookup :: (Eq t) => [t] -> RUPTrie t x -> Maybe x
 lookup [] (Rooted mx _) = mx
 lookup ts (Rooted _ xs) = firstJust $ map (NU.lookup $ NE.fromList ts) xs
+
+lookupWithL :: (Eq t) => (t -> t) -> [t] -> RUPTrie t x -> Maybe x
+lookupWithL _ [] (Rooted mx _) = mx
+lookupWithL f ts (Rooted _ xs) = firstJust $ map (NU.lookupWithL f $ NE.fromList ts) xs
 
 lookupNearestParent :: (Eq t) => [t] -> RUPTrie t x -> Maybe x
 lookupNearestParent [] (Rooted mx _) = mx

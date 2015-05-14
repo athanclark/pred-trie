@@ -7,6 +7,7 @@ module Data.Trie.Pred.Unified.Tail
   , showTail
   , assignLit
   , lookup
+  , lookupWithL
   , lookupNearestParent
   , merge
   , areDisjoint
@@ -84,6 +85,19 @@ lookup (t:|ts) (UPred _ p mrx xrs) =
       [] -> ($ r) <$> mrx
       _  -> ($ r) <$> firstJust (map (lookup $ NE.fromList ts) xrs)
 
+lookupWithL :: Eq t => (t -> t) -> NonEmpty t -> UPTrie t x -> Maybe x
+lookupWithL f (t:|ts) (UMore t' mx xs)
+  | null ts = if f t == t'
+              then mx
+              else Nothing
+  | otherwise = if t == t'
+                then firstJust $ map (lookupWithL f $ NE.fromList ts) xs
+                else Nothing
+lookupWithL f (t:|ts) (UPred _ p mrx xrs) =
+  p t >>=
+    \r -> case ts of
+      [] -> ($ r) <$> mrx
+      _  -> ($ r) <$> firstJust (map (lookupWithL f $ NE.fromList ts) xrs)
 
 lookupNearestParent :: Eq t => NonEmpty t -> UPTrie t x -> Maybe x
 lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = case lookup tss trie of
@@ -140,4 +154,3 @@ sort = foldr insert []
     insert x@(UPred t _ _ _) (y@(UMore p _ _):rs)
       | t == p = insert x rs
       | otherwise = y : insert x rs
-
