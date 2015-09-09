@@ -1,5 +1,6 @@
 module Data.Trie.Pred.Unified
   ( RUPTrie (..)
+  , UPTrie (..)
   , assignLit
   , showTrie
   , merge
