@@ -15,6 +15,8 @@ module Data.Trie.Pred.Unified.Tail
   , lookup
   , lookupWithL
   , lookupNearestParent
+  , lookupThrough
+  , firstNonEmpty
   , merge
   , areDisjoint
   , litSingletonTail
@@ -27,6 +29,7 @@ import Data.List.NonEmpty as NE hiding (map, sort, length)
 import Data.Semigroup hiding (First (..), Last (..))
 import Data.Monoid hiding ((<>))
 import Data.Maybe
+import Data.Bifunctor
 import Data.Functor.Syntax
 import Data.STRef
 import Control.Applicative
@@ -204,18 +207,28 @@ lookupNearestParent tss@(t:|ts) trie@(UPred _ p mrx xrs) = firstJust
        firstJust (fmap (lookupNearestParent $ NE.fromList ts) xrs ++ [mrx]) <~$> r
   ]
 
-lookupSemigroup :: (Eq t, Semigroup x) => Path t -> UPTrie t x -> Maybe x
-lookupSemigroup tss@(t:|ts) trie@(UMore t' mx xs)
-  | null ts = do guard (t == t')
-                 mx
-  | otherwise = do guard (t == t')
-                   xs' <- firstJust $ lookupSemigroup (NE.fromList ts) <$> xs
-                   return $ maybe xs' (<> xs') mx
-lookupSemigroup tss@(t:|ts) trie@(UPred _ p mrx xrs) = do
-  r <- p t
-  if null ts then mrx <~$> r
-             else do xs' <- firstJust (fmap (lookupSemigroup $ NE.fromList ts) xrs) <~$> r
-                     return $ maybe xs' (<> xs') (mrx <~$> r)
+-- | Return all nodes passed during a lookup
+lookupThrough :: Eq t => Path t -> UPTrie t x -> [x]
+lookupThrough (t:|ts) (UMore t' mx xs)
+  | null ts = maybeToList $ do guard (t == t')
+                               mx
+  | otherwise = maybeToList mx
+             ++ (do guard (t == t')
+                    firstNonEmpty $ lookupThrough (NE.fromList ts) <$> xs)
+lookupThrough (t:|ts) (UPred _ p mrx xrs) =
+  let (l,r) = fromMaybe (Nothing,[]) $ do
+                r <- p t
+                return $ if null ts
+                         then ( mrx <~$> r, [])
+                         else ( mrx <~$> r
+                              , firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <~$> r
+                              )
+  in maybeToList l ++ r
+
+firstNonEmpty :: [[a]] -> [a]
+firstNonEmpty [] = []
+firstNonEmpty (x:xs) | null x = firstNonEmpty xs
+                     | otherwise = x
 
 -- | Create a singleton trie out of literal constructors
 litSingletonTail :: Path t -> x -> UPTrie t x

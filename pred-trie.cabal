@@ -1,5 +1,5 @@
 Name:                   pred-trie
-Version:                0.2.0
+Version:                0.2.1
 Author:                 Athan Clark <athan.clark@gmail.com>
 Maintainer:             Athan Clark <athan.clark@gmail.com>
 License:                BSD3
@@ -20,6 +20,7 @@ Library
                         Data.Trie.Pred.Disjoint.Tail
   Build-Depends:        base >= 4.6 && < 5
                       , semigroups
+                      , bifunctors
                       , mtl
                       , composition-extra >= 1.2
                       , QuickCheck
@@ -38,6 +39,7 @@ Test-Suite spec
                       , QuickCheck
                       , quickcheck-instances
                       , semigroups
+                      , bifunctors
                       , mtl
                       , composition-extra
 

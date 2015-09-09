@@ -7,6 +7,7 @@ module Data.Trie.Pred.Unified
   , lookup
   , lookupWithL
   , lookupNearestParent
+  , lookupThrough
   , litSingleton
   , litExtrude
   ) where
@@ -87,10 +88,10 @@ lookupNearestParent ts (Rooted mx xs) =
   firstJust $ (NU.lookupNearestParent (NE.fromList ts) <$> xs) ++ [mx]
 
 -- | Append contents up-to lookup path.
-lookupMonoid :: (Eq t, Monoid x) => [t] -> RUPTrie t x -> Maybe x
-lookupMonoid [] (Rooted mx _) = mx
-lookupMonoid ts (Rooted mx xs) =
-  (<>) <$> mx <*> firstJust (NU.lookupMonoid (NE.fromList ts) <$> xs)
+lookupThrough :: (Eq t, Monoid x) => [t] -> RUPTrie t x -> [x]
+lookupThrough [] (Rooted mx _) = maybeToList mx
+lookupThrough ts (Rooted mx xs) =
+  maybeToList mx ++ NU.firstNonEmpty (NU.lookupThrough (NE.fromList ts) <$> xs)
 
 litSingleton :: [t] -> x -> RUPTrie t x
 litSingleton [] x = Rooted (Just x) []
