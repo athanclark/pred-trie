@@ -20,7 +20,6 @@ Library
                         Data.Trie.Pred.Disjoint.Tail
   Build-Depends:        base >= 4.6 && < 5
                       , semigroups
-                      , bifunctors
                       , mtl
                       , composition-extra >= 1.2
                       , QuickCheck
@@ -39,7 +38,6 @@ Test-Suite spec
                       , QuickCheck
                       , quickcheck-instances
                       , semigroups
-                      , bifunctors
                       , mtl
                       , composition-extra
 

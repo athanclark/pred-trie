@@ -29,13 +29,9 @@ import Data.List.NonEmpty as NE hiding (map, sort, length)
 import Data.Semigroup hiding (First (..), Last (..))
 import Data.Monoid hiding ((<>))
 import Data.Maybe
-import Data.Bifunctor
 import Data.Functor.Syntax
-import Data.STRef
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Reader
-import Control.Monad.ST
 
 import Test.QuickCheck
 
