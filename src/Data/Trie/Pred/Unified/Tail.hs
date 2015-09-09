@@ -1,11 +1,17 @@
 {-# LANGUAGE
-  GADTs
+    GADTs
   #-}
 
 module Data.Trie.Pred.Unified.Tail
   ( UPTrie (..)
+  , suppliment
+  , tagUPTrie
+  , measureDepthRelative
+  , minDepth
+  , maxDepth
   , showTail
   , assignLit
+  , elem
   , lookup
   , lookupWithL
   , lookupNearestParent
@@ -16,9 +22,19 @@ module Data.Trie.Pred.Unified.Tail
   , sort
   ) where
 
-import Prelude hiding (lookup)
-import Data.List.NonEmpty as NE hiding (map, sort)
+import Prelude hiding (lookup, elem, map)
+import Data.List.NonEmpty as NE hiding (map, sort, length)
+import Data.Semigroup hiding (First (..), Last (..))
+import Data.Monoid hiding ((<>))
+import Data.Maybe
+import Data.Functor.Syntax
+import Data.STRef
 import Control.Applicative
+import Control.Monad
+import Control.Monad.Reader
+import Control.Monad.ST
+
+import Test.QuickCheck
 
 
 
@@ -33,37 +49,115 @@ data UPTrie t x where
         -> [UPTrie t (r -> x)]
         -> UPTrie t x
 
+
+-- | Given a parser and a chunk, take a trie expecting a result, and
+-- possibly return a reduced trie without the expectation.
+suppliment :: (t -> Maybe r) -> t -> UPTrie t (r -> x) -> Maybe (UPTrie t x)
+suppliment p t xrs = (xrs <~$>) <$> p t
+
+-- | Acts as a default tag value for the node
+tagUPTrie :: UPTrie t x -> t
+tagUPTrie (UMore t _ _) = t
+tagUPTrie (UPred t _ _ _) = t
+
+-- | Measure the depth of a trie, based on the relation of other adjacent depths
+measureDepthRelative :: ([Int] -> Int) -> UPTrie t x -> Int
+measureDepthRelative f = go 0
+  where
+    go :: Int -> UPTrie t x -> Int
+    go n (UMore _ _ xs) =
+      f $ go (n+1) <$> xs
+    go n (UPred t p _ xrs) =
+      f $ go (n+1) <$> mapMaybe (suppliment p t) xrs
+
+maxDepth :: UPTrie t x -> Int
+maxDepth = measureDepthRelative maximum'
+  where
+    maximum' [] = 1
+    maximum' xs = maximum xs
+
+minDepth :: UPTrie t x -> Int
+minDepth = measureDepthRelative minimum'
+  where
+    minimum' [] = 1
+    minimum' xs = minimum xs
+
+instance Functor (UPTrie t) where
+  fmap = map
+
+map :: (a -> b) -> UPTrie t a -> UPTrie t b
+map f (UMore t mx xs) = UMore t (f <$> mx) $ f <$$> xs
+map f (UPred t p mrx xrs) = UPred t p (f <.$> mrx) $ f <.$$> xrs
+
+instance Foldable (UPTrie t) where
+  foldMap f xs = fromMaybe mempty $ unwrapMonoid $ go $ f <$> xs
+    where
+      go (UMore _ mx xs') = WrapMonoid mx <> WrapMonoid (foldMap (unwrapMonoid . go) xs')
+      go (UPred t p mrx xrs) = WrapMonoid (mrx <*> p t) <> WrapMonoid (mconcat
+        (mapMaybe (\z -> (\r -> unwrapMonoid $ go $ z <~$> r) <$> p t) xrs))
+
+instance (Eq t, Eq x) => Eq (UPTrie t x) where
+  (UMore s mx xs) == (UMore t my ys) = t == s && mx == my && xs == ys
+  (UPred s p mx xs) == (UPred t q my ys) = s == t
+                                        && (mx <*> p s) == (my <*> q t)
+                                        && (suppliment p s <$> xs) -- same children
+                                        == (suppliment q t <$> ys)
+  (UMore s mx xs) == (UPred t q my ys) = s == t
+                                      && mx == (my <*> q t)
+                                      && (Just <$> xs) == (suppliment q t <$> ys)
+  (UPred s p mx xs) == (UMore t my ys) = s == t
+                                      && (mx <*> p s) == my
+                                      && (suppliment p s <$> xs) == (Just <$> ys)
+
+instance Eq t => Semigroup (UPTrie t x) where
+  (<>) = merge
+
+-- | Overwrites when similar, leaves untouched when not
+merge :: (Eq t) => UPTrie t x -> UPTrie t x -> UPTrie t x
+merge xx@(UMore t mx xs) (UMore p my ys)
+  | t == p = UMore p (getLast $ Last mx <> Last my) $ sort $ xs ++ ys
+  | otherwise = xx
+merge xx@(UPred t _ _ _) yy@(UPred p _ _ _)
+  | t == p = yy -- predicate children are incompatible
+  | otherwise = xx
+merge xx@(UMore t _ _) yy@(UPred p _ _ _)
+  | t == p = yy -- rightward bias
+  | otherwise = xx
+merge xx@(UPred t _ _ _) yy@(UMore p _ _)
+  | t == p = yy -- rightward bias
+  | otherwise = xx
+
+-- | Can only generate literal examples
+instance (Arbitrary t, Arbitrary x) => Arbitrary (UPTrie t x) where
+  arbitrary = sized go
+    where
+      go s = do
+        t <- arbitrary
+        mx <- arbitrary
+        xs <- if s <= 1 then return []
+                        else scale (subtract 1) arbitrary `suchThat` (\x -> length x < 10)
+        return $ UMore t mx xs
+
 showTail :: (Show t) => UPTrie t x -> String
-showTail (UMore t mx xs) = "(UMore " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
-showTail (UPred t p mx xs) = "(UPred " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
+showTail (UMore t _ xs) = "(UMore " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
+showTail (UPred t _ _ xs) = "(UPred " ++ show t ++ ") [" ++ concatMap showTail xs ++ "] "
 
 -- | Ignores contents
 instance (Show t) => Show (UPTrie t x) where
   show = showTail
 
--- | Assigns a value to literal constructors
-assignLit :: (Eq t) => NonEmpty t -> Maybe x -> UPTrie t x -> UPTrie t x
-assignLit (t:|ts) mx yy@(UMore p my ys)
-  | t == p = case ts of
-               [] -> UMore p mx ys
-               _  -> UMore p my $ map (assignLit (NE.fromList ts) mx) ys
-  | otherwise = yy
-assignLit _ _ yy@(UPred _ _ _ _) = yy
 
--- | Overwrites when similar, leaves untouched when not
-merge :: (Eq t) => UPTrie t x -> UPTrie t x -> UPTrie t x
-merge xx@(UMore t mx xs) yy@(UMore p my ys)
-  | t == p = UMore p my $ sort $ xs ++ ys
-  | otherwise = xx
-merge xx@(UPred t q mrx xrs) yy@(UPred p w mry yrs)
-  | t == p = yy -- predicate children are incompatible
-  | otherwise = xx
-merge xx@(UMore t mx xs) yy@(UPred p w mrx xrs)
-  | t == p = yy -- rightward bias
-  | otherwise = xx
-merge xx@(UPred t q mrx xrs) yy@(UMore p my ys)
-  | t == p = yy -- rightward bias
-  | otherwise = xx
+
+type Path t = NonEmpty t
+
+-- | Assigns a value to literal constructors
+assignLit :: (Eq t) => Path t -> Maybe x -> UPTrie t x -> UPTrie t x
+assignLit (t:|ts) mx yy@(UMore p my ys)
+  | t == p = if null ts
+             then UMore p mx ys
+             else UMore p my $ fmap (assignLit (NE.fromList ts) mx) ys
+  | otherwise = yy
+assignLit _ _ yy = yy
 
 
 areDisjoint :: (Eq t) => UPTrie t x -> UPTrie t x -> Bool
@@ -72,61 +166,59 @@ areDisjoint (UPred t _ _ _)  (UPred p _ _ _)  = t /= p
 areDisjoint (UPred t _ _ _)  (UMore p _ _)    = t /= p
 areDisjoint (UMore t _ _)    (UPred p _ _ _)  = t /= p
 
+elem :: Eq t => Path t -> UPTrie t x -> Bool
+elem ts = isJust . lookup ts
 
-lookup :: Eq t => NonEmpty t -> UPTrie t x -> Maybe x
-lookup (t:|ts) (UMore t' mx xs)
-  | t == t' = case ts of
-    [] -> mx
-    _  -> firstJust $ map (lookup $ NE.fromList ts) xs
-  | otherwise = Nothing
-lookup (t:|ts) (UPred _ p mrx xrs) =
-  p t >>=
-    \r -> case ts of
-      [] -> ($ r) <$> mrx
-      _  -> ($ r) <$> firstJust (map (lookup $ NE.fromList ts) xrs)
+lookup :: Eq t => Path t -> UPTrie t x -> Maybe x
+lookup (t:|ts) (UMore t' mx xs) = do
+  guard (t == t')
+  if null ts then mx
+             else firstJust $ fmap (lookup $ NE.fromList ts) xs
+lookup (t:|ts) (UPred _ p mrx xrs) = do
+  r <- p t
+  if null ts then mrx <~$> r
+             else firstJust (fmap (lookup $ NE.fromList ts) xrs) <~$> r
 
-lookupWithL :: Eq t => (t -> t) -> NonEmpty t -> UPTrie t x -> Maybe x
+-- | Apply a transform @f@ to the final path chunk, when matching a literal
+-- cell - used for eliminating file extensions in nested-routes.
+lookupWithL :: Eq t => (t -> t) -> Path t -> UPTrie t x -> Maybe x
 lookupWithL f (t:|ts) (UMore t' mx xs)
-  | null ts = if f t == t'
-              then mx
-              else Nothing
-  | otherwise = if t == t'
-                then firstJust $ map (lookupWithL f $ NE.fromList ts) xs
-                else Nothing
-lookupWithL f (t:|ts) (UPred _ p mrx xrs) =
-  p t >>=
-    \r -> case ts of
-      [] -> ($ r) <$> mrx
-      _  -> ($ r) <$> firstJust (map (lookupWithL f $ NE.fromList ts) xrs)
+  | null ts = do guard (f t == t')
+                 mx
+  | otherwise = do guard (t == t')
+                   firstJust $ fmap (lookupWithL f $ NE.fromList ts) xs
+lookupWithL f (t:|ts) (UPred _ p mrx xrs) = do
+  r <- p t
+  if null ts then mrx <~$> r
+             else firstJust (fmap (lookupWithL f $ NE.fromList ts) xrs) <~$> r
 
-lookupNearestParent :: Eq t => NonEmpty t -> UPTrie t x -> Maybe x
-lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = case lookup tss trie of
-  Nothing -> if t == t'
-    then case ts of
-           [] -> mx -- redundant; should have successful lookup
-           _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xs of
-                   Nothing -> mx
-                   justr   -> justr
-    else Nothing
-  justr -> justr
-lookupNearestParent tss@(t:|ts) trie@(UPred t' p mrx xrs) = case lookup tss trie of
-  Nothing -> p t >>=
-    \r -> case ts of
-            [] -> ($ r) <$> mrx -- redundant; should have successful lookup
-            _  -> case firstJust $ map (lookupNearestParent $ NE.fromList ts) xrs of
-                    Nothing -> ($ r) <$> mrx
-                    justr   -> ($ r) <$> justr
-  justr -> justr
+lookupNearestParent :: Eq t => Path t -> UPTrie t x -> Maybe x
+lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = firstJust
+  [ lookup tss trie
+  , do guard (t == t')
+       firstJust $ fmap (lookupNearestParent $ NE.fromList ts) xs ++ [mx]
+  ]
+lookupNearestParent tss@(t:|ts) trie@(UPred _ p mrx xrs) = firstJust
+  [ lookup tss trie
+  , do r <- p t
+       firstJust (fmap (lookupNearestParent $ NE.fromList ts) xrs ++ [mrx]) <~$> r
+  ]
 
-
-
-firstJust :: [Maybe a] -> Maybe a
-firstJust [] = Nothing
-firstJust (Nothing:xs) = firstJust xs
-firstJust (Just x :xs) = Just x
+lookupSemigroup :: (Eq t, Semigroup x) => Path t -> UPTrie t x -> Maybe x
+lookupSemigroup tss@(t:|ts) trie@(UMore t' mx xs)
+  | null ts = do guard (t == t')
+                 mx
+  | otherwise = do guard (t == t')
+                   xs' <- firstJust $ lookupSemigroup (NE.fromList ts) <$> xs
+                   return $ maybe xs' (<> xs') mx
+lookupSemigroup tss@(t:|ts) trie@(UPred _ p mrx xrs) = do
+  r <- p t
+  if null ts then mrx <~$> r
+             else do xs' <- firstJust (fmap (lookupSemigroup $ NE.fromList ts) xrs) <~$> r
+                     return $ maybe xs' (<> xs') (mrx <~$> r)
 
 -- | Create a singleton trie out of literal constructors
-litSingletonTail :: NonEmpty t -> x -> UPTrie t x
+litSingletonTail :: Path t -> x -> UPTrie t x
 litSingletonTail (t:|[]) x = UMore t (Just x) []
 litSingletonTail (t:|ts) x = UMore t Nothing  [litSingletonTail (NE.fromList ts) x]
 
@@ -136,21 +228,27 @@ litExtrudeTail [] r = r
 litExtrudeTail (t:ts) r = UMore t Nothing [litExtrudeTail ts r]
 
 
--- also does a non-deterministic merge - make sure your nodes are disjoint & clean
+-- | also does a non-deterministic merge - make sure your nodes are disjoint & clean
 sort :: (Eq t) => [UPTrie t x] -> [UPTrie t x]
-sort = foldr insert []
+sort = foldr insert' []
   where
-    insert :: (Eq t) => UPTrie t x -> [UPTrie t x] -> [UPTrie t x]
-    insert r [] = [r]
-    insert x@(UMore t _ _) (y@(UMore p _ _):rs)
+    insert' :: (Eq t) => UPTrie t x -> [UPTrie t x] -> [UPTrie t x]
+    insert' r [] = [r]
+    insert' x@(UMore t _ _) (y@(UMore p _ _):rs)
       | t == p = x : rs
       | otherwise = x : y : rs
-    insert x@(UMore t _ _) (y@(UPred p _ _ _):rs)
+    insert' x@(UMore t _ _) (y@(UPred p _ _ _):rs)
       | t == p = x : rs
       | otherwise = x : y : rs
-    insert x@(UPred t _ _ _) (y@(UPred p _ _ _):rs)
-      | t == p = x : rs -- basis
+    insert' x@(UPred t _ _ _) (y@(UPred p _ _ _):rs)
+      | t == p = x : rs
       | otherwise = x : y : rs
-    insert x@(UPred t _ _ _) (y@(UMore p _ _):rs)
-      | t == p = insert x rs
-      | otherwise = y : insert x rs
+    insert' x@(UPred t _ _ _) (y@(UMore p _ _):rs)
+      | t == p = insert' x rs -- Puts @UPred@ at the bottom
+      | otherwise = y : insert' x rs
+
+
+-- * Utilities
+
+firstJust :: [Maybe a] -> Maybe a
+firstJust = getFirst . foldMap First

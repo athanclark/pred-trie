@@ -20,6 +20,9 @@ Library
                         Data.Trie.Pred.Disjoint.Tail
   Build-Depends:        base >= 4.6 && < 5
                       , semigroups
+                      , mtl
+                      , composition-extra >= 1.2
+                      , QuickCheck
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0
@@ -29,9 +32,14 @@ Test-Suite spec
   Ghc-Options:          -Wall
   Main-Is:              Spec.hs
   Build-Depends:        base
-                      , hspec
+                      , tasty
+                      , tasty-quickcheck
+                      , tasty-hunit
                       , QuickCheck
                       , quickcheck-instances
+                      , semigroups
+                      , mtl
+                      , composition-extra
 
 Benchmark simplevshort
     Type:               exitcode-stdio-1.0
