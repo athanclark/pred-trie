@@ -89,7 +89,7 @@ lookupNearestParent ts (Rooted mx xs) =
   firstJust $ (NU.lookupNearestParent (NE.fromList ts) <$> xs) ++ [mx]
 
 -- | Append contents up-to lookup path.
-lookupThrough :: (Eq t, Monoid x) => [t] -> RUPTrie t x -> [x]
+lookupThrough :: (Eq t) => [t] -> RUPTrie t x -> [x]
 lookupThrough [] (Rooted mx _) = maybeToList mx
 lookupThrough ts (Rooted mx xs) =
   maybeToList mx ++ NU.firstNonEmpty (NU.lookupThrough (NE.fromList ts) <$> xs)
