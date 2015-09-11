@@ -205,21 +205,19 @@ lookupNearestParent tss@(t:|ts) trie@(UPred _ p mrx xrs) = firstJust
 
 -- | Return all nodes passed during a lookup
 lookupThrough :: Eq t => Path t -> UPTrie t x -> [x]
-lookupThrough (t:|ts) (UMore t' mx xs)
-  | null ts = maybeToList $ do guard (t == t')
-                               mx
-  | otherwise = maybeToList mx
-             ++ (do guard (t == t')
-                    firstNonEmpty $ lookupThrough (NE.fromList ts) <$> xs)
+lookupThrough (t:|ts) (UMore t' mx xs) = do
+  guard $ t == t'
+  maybeToList mx ++ (do guard $ null ts
+                        firstNonEmpty $ fmap (lookupThrough $ NE.fromList ts) xs)
 lookupThrough (t:|ts) (UPred _ p mrx xrs) =
-  let (l,r) = fromMaybe (Nothing,[]) $ do
+  let (left,right) = fromMaybe (Nothing,[]) $ do
                 r <- p t
                 return $ if null ts
                          then ( mrx <~$> r, [])
                          else ( mrx <~$> r
                               , firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <~$> r
                               )
-  in maybeToList l ++ r
+  in maybeToList left ++ right
 
 firstNonEmpty :: [[a]] -> [a]
 firstNonEmpty [] = []
