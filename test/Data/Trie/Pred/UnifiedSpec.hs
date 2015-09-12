@@ -13,27 +13,19 @@ unifiedSpec = testGroup "Data.Trie.Pred.Unified"
   [ testGroup "`lookup`"
       [ QC.testProperty "should work for present elements" prop_lookup_elem
       ]
-  -- , testGroup "LinVar"
-  --     [ QC.testProperty "should generate non-empty variable names"
-  --         prop_linVar_notNull
-  --     ]
-  -- , testGroup "Ineq"
-  --     [ QC.testProperty "`standardize` should be idempotent"
-  --         prop_standardize_Idempotency
-  --     ]
   ]
 
 prop_lookup_elem :: ExistingPath Int Int -> Bool
-prop_lookup_elem (ExistingPath xs ts) = isJust $ U.lookup ts xs
+prop_lookup_elem (ExistingPath ts xs) = isJust $ U.lookup ts xs
 
 
 data ExistingPath t x = ExistingPath
-  { trieExisting :: RUPTrie t x
-  , pathExisting :: [t] }
+  { pathExisting :: [t]
+  , trieExisting :: RUPTrie t x }
   deriving (Show, Eq)
 
 instance (Arbitrary t, Arbitrary x, Eq t) => Arbitrary (ExistingPath t x) where
   arbitrary = do
     xs <- arbitrary
-    ts <- arbitrary `suchThat` (\x -> U.elem x xs)
-    return $ ExistingPath xs ts
+    ts <- arbitrary `suchThat` (`U.elem` xs)
+    return $ ExistingPath ts xs

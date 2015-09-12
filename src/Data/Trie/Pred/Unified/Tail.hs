@@ -38,7 +38,7 @@ import Test.QuickCheck
 
 
 data UPTrie t x where
-  UMore :: t
+  UMore :: t -- TODO: Make `Ord` because lookups are terrible
         -> Maybe x
         -> [UPTrie t x]
         -> UPTrie t x
@@ -128,13 +128,14 @@ merge xx@(UPred t _ _ _) yy@(UMore p _ _)
 
 -- | Can only generate literal examples
 instance (Arbitrary t, Arbitrary x) => Arbitrary (UPTrie t x) where
-  arbitrary = sized go
+  arbitrary = go 5
     where
-      go s = do
+      go depth = do
         t <- arbitrary
         mx <- arbitrary
-        xs <- if s <= 1 then return []
-                        else scale (subtract 1) arbitrary `suchThat` (\x -> length x < 10)
+        xs <- if depth <= 1 then return []
+                            else do n <- choose (0,depth)
+                                    replicateM n $ go (depth-1)
         return $ UMore t mx xs
 
 showTail :: (Show t) => UPTrie t x -> String
