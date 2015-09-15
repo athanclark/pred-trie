@@ -21,6 +21,7 @@ Library
   Build-Depends:        base >= 4.6 && < 5
                       , semigroups
                       , mtl
+                      , containers
                       , composition-extra >= 1.2
                       , QuickCheck
 

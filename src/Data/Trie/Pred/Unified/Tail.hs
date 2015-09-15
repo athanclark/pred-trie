@@ -1,5 +1,6 @@
 {-# LANGUAGE
     GADTs
+  , ExistentialQuantification
   #-}
 
 module Data.Trie.Pred.Unified.Tail
@@ -30,12 +31,29 @@ import Data.Semigroup hiding (First (..), Last (..))
 import Data.Monoid hiding ((<>))
 import Data.Maybe
 import Data.Functor.Syntax
+import qualified Data.Map as Map
 import Control.Applicative
 import Control.Monad
 
 import Test.QuickCheck
 
+import Debug.Trace
 
+
+-- type LitTrie t x = Map.Map t (Maybe x, Maybe (LitTrie t x))
+--
+-- data UPChildren t x = UPChildren
+--   { upchildrenLit  :: Map.Map t x -- Literal lookups
+--   , upchildrenPred :: UPPred t x
+--   }
+--
+-- data UPPred t x =
+--   forall r. UPPred
+--   { predTag :: t
+--   , predPred :: (t -> Maybe r)
+--   , predHandle :: Maybe (r -> x)
+--   , predChildren ::
+--   }
 
 data UPTrie t x where
   UMore :: t -- TODO: Make `Ord` because lookups are terrible
