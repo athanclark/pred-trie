@@ -1,6 +1,7 @@
 {-# LANGUAGE
     GADTs
   , ExistentialQuantification
+  , TupleSections
   #-}
 
 module Data.Trie.Pred.Unified.Tail
@@ -213,29 +214,28 @@ lookupWithL f (t:|ts) (UPred _ p mrx xrs) = do
 lookupNearestParent :: Eq t => Path t -> UPTrie t x -> Maybe x
 lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = firstJust
   [ lookup tss trie
-  , do guard (t == t')
-       firstJust $ fmap (lookupNearestParent $ NE.fromList ts) xs ++ [mx]
+  , do guard $ t == t'
+       firstJust $ (do guard $ not $ null ts
+                       fmap (lookupNearestParent $ NE.fromList ts) xs) ++ [mx]
   ]
 lookupNearestParent tss@(t:|ts) trie@(UPred _ p mrx xrs) = firstJust
   [ lookup tss trie
   , do r <- p t
-       firstJust (fmap (lookupNearestParent $ NE.fromList ts) xrs ++ [mrx]) <~$> r
+       firstJust ((do guard $ not $ null ts
+                      fmap (lookupNearestParent $ NE.fromList ts) xrs) ++ [mrx]) <~$> r
   ]
 
 -- | Return all nodes passed during a lookup
 lookupThrough :: Eq t => Path t -> UPTrie t x -> [x]
 lookupThrough (t:|ts) (UMore t' mx xs) = do
   guard $ t == t'
-  maybeToList mx ++ (do guard $ null ts
+  maybeToList mx ++ (do guard $ not $ null ts
                         firstNonEmpty $ fmap (lookupThrough $ NE.fromList ts) xs)
 lookupThrough (t:|ts) (UPred _ p mrx xrs) =
   let (left,right) = fromMaybe (Nothing,[]) $ do
-                r <- p t
-                return $ if null ts
-                         then ( mrx <~$> r, [])
-                         else ( mrx <~$> r
-                              , firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <~$> r
-                              )
+          r <- p t
+          return (mrx <~$> r, do guard $ not $ null ts
+                                 firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <~$> r)
   in maybeToList left ++ right
 
 firstNonEmpty :: [[a]] -> [a]
