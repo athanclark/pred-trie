@@ -10,11 +10,13 @@ module Data.Trie.Pred.Types where
 
 import Prelude hiding (lookup)
 import Data.Trie.Class
-import Data.Functor.Syntax
 import qualified Data.Trie.Map as TM
 import qualified Data.Map as M
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+
+import Data.Functor.Syntax
+import Data.Monoid
 
 
 -- * Predicated Step
@@ -49,3 +51,9 @@ data PredTrie s a = PredTrie
   { predLits  :: TM.MapStep PredTrie s a
   , predPreds :: [PredStep PredTrie s a]
   } deriving (Functor)
+
+instance Ord s => Trie NonEmpty s PredTrie where
+  lookup ts (PredTrie ls ps) =
+    getFirst $ (First $ lookup ts ls) <> foldMap (First . lookup ts) ps
+  delete ts (PredTrie ls ps) = PredTrie (delete ts ls) $ fmap (delete ts) ps
+  insert ts x (PredTrie ls ps) = PredTrie (insert ts x ls) ps -- can only insert literals
