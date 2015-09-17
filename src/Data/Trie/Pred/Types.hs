@@ -127,3 +127,12 @@ matchRPT ts (RootedPredTrie mx xs) = getFirst $
                                  return ([],x,[]))
   where mFoundThere = do (pre,x,suff) <- matchPT (NE.fromList ts) xs
                          return (NE.toList pre,x,suff)
+
+matchesRPT :: Ord s => [s] -> RootedPredTrie s a -> [([s], a, [s])]
+matchesRPT [] (RootedPredTrie mx _) = fromMaybe [] $ do x <- mx
+                                                        return [([],x,[])]
+matchesRPT ts (RootedPredTrie mx xs) =
+  foundHere ++ fmap allowRoot (matchesPT (NE.fromList ts) xs)
+  where foundHere = fromMaybe [] $ do x <- mx
+                                      return [([],x,[])]
+        allowRoot (pre,x,suff) = (NE.toList pre,x,suff)
