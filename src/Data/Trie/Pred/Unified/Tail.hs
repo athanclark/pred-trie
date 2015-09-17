@@ -71,7 +71,7 @@ data UPTrie t x where
 -- | Given a parser and a chunk, take a trie expecting a result, and
 -- possibly return a reduced trie without the expectation.
 suppliment :: (t -> Maybe r) -> t -> UPTrie t (r -> x) -> Maybe (UPTrie t x)
-suppliment p t xrs = (xrs <~$>) <$> p t
+suppliment p t xrs = (xrs <$~>) <$> p t
 
 -- | Acts as a default tag value for the node
 tagUPTrie :: UPTrie t x -> t
@@ -112,7 +112,7 @@ instance Foldable (UPTrie t) where
     where
       go (UMore _ mx xs') = WrapMonoid mx <> WrapMonoid (foldMap (unwrapMonoid . go) xs')
       go (UPred t p mrx xrs) = WrapMonoid (mrx <*> p t) <> WrapMonoid (mconcat
-        (mapMaybe (\z -> (\r -> unwrapMonoid $ go $ z <~$> r) <$> p t) xrs))
+        (mapMaybe (\z -> (\r -> unwrapMonoid $ go $ z <$~> r) <$> p t) xrs))
 
 instance (Eq t, Eq x) => Eq (UPTrie t x) where
   (UMore s mx xs) == (UMore t my ys) = t == s && mx == my && xs == ys
@@ -195,8 +195,8 @@ lookup (t:|ts) (UMore t' mx xs) = do
              else firstJust $ fmap (lookup $ NE.fromList ts) xs
 lookup (t:|ts) (UPred _ p mrx xrs) = do
   r <- p t
-  if null ts then mrx <~$> r
-             else firstJust (fmap (lookup $ NE.fromList ts) xrs) <~$> r
+  if null ts then mrx <$~> r
+             else firstJust (fmap (lookup $ NE.fromList ts) xrs) <$~> r
 
 -- | Apply a transform @f@ to the final path chunk, when matching a literal
 -- cell - used for eliminating file extensions in nested-routes.
@@ -208,8 +208,8 @@ lookupWithL f (t:|ts) (UMore t' mx xs)
                    firstJust $ fmap (lookupWithL f $ NE.fromList ts) xs
 lookupWithL f (t:|ts) (UPred _ p mrx xrs) = do
   r <- p t
-  if null ts then mrx <~$> r
-             else firstJust (fmap (lookupWithL f $ NE.fromList ts) xrs) <~$> r
+  if null ts then mrx <$~> r
+             else firstJust (fmap (lookupWithL f $ NE.fromList ts) xrs) <$~> r
 
 lookupNearestParent :: Eq t => Path t -> UPTrie t x -> Maybe x
 lookupNearestParent tss@(t:|ts) trie@(UMore t' mx xs) = firstJust
@@ -222,7 +222,7 @@ lookupNearestParent tss@(t:|ts) trie@(UPred _ p mrx xrs) = firstJust
   [ lookup tss trie
   , do r <- p t
        firstJust ((do guard $ not $ null ts
-                      fmap (lookupNearestParent $ NE.fromList ts) xrs) ++ [mrx]) <~$> r
+                      fmap (lookupNearestParent $ NE.fromList ts) xrs) ++ [mrx]) <$~> r
   ]
 
 -- | Return all nodes passed during a lookup
@@ -234,8 +234,8 @@ lookupThrough (t:|ts) (UMore t' mx xs) = do
 lookupThrough (t:|ts) (UPred _ p mrx xrs) =
   let (left,right) = fromMaybe (Nothing,[]) $ do
           r <- p t
-          return (mrx <~$> r, do guard $ not $ null ts
-                                 firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <~$> r)
+          return (mrx <$~> r, do guard $ not $ null ts
+                                 firstNonEmpty (fmap (lookupThrough $ NE.fromList ts) xrs) <$~> r)
   in maybeToList left ++ right
 
 firstNonEmpty :: [[a]] -> [a]

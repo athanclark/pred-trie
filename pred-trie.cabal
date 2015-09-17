@@ -1,5 +1,5 @@
 Name:                   pred-trie
-Version:                0.2.4.3
+Version:                0.3.0
 Author:                 Athan Clark <athan.clark@gmail.com>
 Maintainer:             Athan Clark <athan.clark@gmail.com>
 License:                BSD3
@@ -14,7 +14,8 @@ Library
   Default-Language:     Haskell2010
   HS-Source-Dirs:       src
   GHC-Options:          -Wall
-  Exposed-Modules:      Data.Trie.Pred.Unified
+  Exposed-Modules:      Data.Trie.Pred.Types
+                        Data.Trie.Pred.Unified
                         Data.Trie.Pred.Unified.Tail
                         Data.Trie.Pred.Disjoint
                         Data.Trie.Pred.Disjoint.Tail
@@ -22,7 +23,8 @@ Library
                       , semigroups
                       , mtl
                       , containers
-                      , composition-extra >= 1.2
+                      , composition-extra >= 1.3
+                      , tries >= 0.0.1
                       , QuickCheck
 
 Test-Suite spec
