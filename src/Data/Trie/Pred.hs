@@ -6,7 +6,7 @@
   , DeriveFunctor
   #-}
 
-module Data.Trie.Pred.Types where
+module Data.Trie.Pred where
 
 import Prelude hiding (lookup)
 import Data.Trie.Pred.Step
@@ -42,6 +42,8 @@ instance Ord s => Monoid (PredTrie s a) where
 
 emptyPT :: PredTrie s a
 emptyPT = PredTrie MT.empty (PredSteps [])
+
+
 
 -- subtrie :: Ord s => NonEmpty s -> PredTrie s a -> PredTrie s a
 -- subtrie (t:|ts) (PredTrie (MapTrie (MapStep ls)) ps)

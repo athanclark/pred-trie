@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Trie.Pred.UnifiedSpec
+import Data.Trie.PredSpec
 
 import Test.Tasty
 
@@ -10,4 +10,4 @@ main = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "Testing..."
-  [unifiedSpec]
+  [predSpec]
