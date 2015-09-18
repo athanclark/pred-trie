@@ -55,7 +55,7 @@ newtype PredSteps c s a = PredSteps
   { unPredSteps :: [PredStep c s a] }
   deriving (Functor)
 
-  -- | Lookup and delete only - can't arbitrarilly construct a predicated trie.
+-- | Lookup and delete only - can't arbitrarilly construct a predicated trie.
 instance Trie NonEmpty s c => Trie NonEmpty s (PredSteps c) where
   lookup ts (PredSteps ps) = getFirst $ foldMap (First . lookup ts) ps
   delete ts (PredSteps ps) = PredSteps $ fmap (delete ts) ps

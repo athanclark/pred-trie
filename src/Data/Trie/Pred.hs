@@ -116,10 +116,13 @@ instance Ord s => Trie [] s RootedPredTrie where
   insert ts x (RootedPredTrie mx xs) = RootedPredTrie mx $ insert (NE.fromList ts) x xs
 
 instance Ord s => Monoid (RootedPredTrie s a) where
-  mempty = RootedPredTrie Nothing emptyPT
+  mempty = emptyRPT
   mappend (RootedPredTrie mx xs) (RootedPredTrie my ys) = RootedPredTrie
     (getLast $ Last mx <> Last my) $ xs <> ys
 
+
+emptyRPT :: RootedPredTrie s a
+emptyRPT = RootedPredTrie Nothing emptyPT
 
 matchRPT :: Ord s => [s] -> RootedPredTrie s a -> Maybe ([s], a, [s])
 matchRPT [] (RootedPredTrie mx _) = do x <- mx
