@@ -21,26 +21,26 @@ Library
                       , mtl
                       , containers
                       , composition-extra >= 2.0.0
-                      , tries >= 0.0.1
+                      , tries >= 0.0.2
                       , QuickCheck
 
-Test-Suite spec
-  Type:                 exitcode-stdio-1.0
-  Default-Language:     Haskell2010
-  Hs-Source-Dirs:       src
-                      , test
-  Ghc-Options:          -Wall -threaded
-  Main-Is:              Spec.hs
-  Other-Modules:        Data.Trie.PredSpec
-  Build-Depends:        base
-                      , tasty
-                      , tasty-quickcheck
-                      , tasty-hunit
-                      , QuickCheck
-                      , quickcheck-instances
-                      , semigroups
-                      , mtl
-                      , composition-extra
+-- Test-Suite spec
+--   Type:                 exitcode-stdio-1.0
+--   Default-Language:     Haskell2010
+--   Hs-Source-Dirs:       src
+--                       , test
+--   Ghc-Options:          -Wall -threaded
+--   Main-Is:              Spec.hs
+--   Other-Modules:        Data.Trie.PredSpec
+--   Build-Depends:        base
+--                       , tasty
+--                       , tasty-quickcheck
+--                       , tasty-hunit
+--                       , QuickCheck
+--                       , quickcheck-instances
+--                       , semigroups
+--                       , mtl
+--                       , composition-extra
 
 Benchmark bench
   Type:                 exitcode-stdio-1.0
@@ -51,12 +51,15 @@ Benchmark bench
   Ghc-Options:          -Wall -threaded
   Build-Depends:        base
                       , pred-trie
+                      , tries
+                      , containers
                       , criterion
                       , semigroups
                       , attoparsec
                       , text
                       , composition-extra
                       , QuickCheck
+                      , sets
 
 Source-Repository head
   Type:                 git
