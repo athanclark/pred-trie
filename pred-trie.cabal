@@ -36,12 +36,12 @@ Test-Suite spec
                         Data.Trie.Pred
                         Data.Trie.Pred.Step
   Build-Depends:        base
-                      , composition-extra >= 2.0.0
+                      , composition-extra
                       , deepseq
                       , hashable
                       , mtl
                       , semigroups
-                      , tries >= 0.0.3
+                      , tries
                       , unordered-containers
                       , tasty
                       , tasty-quickcheck
@@ -59,16 +59,18 @@ Benchmark bench
                       , src
   Ghc-Options:          -Wall -threaded
   Build-Depends:        base
-                      , pred-trie
-                      , tries
-                      , containers
-                      , criterion
+                      , composition-extra
+                      , deepseq
+                      , hashable
+                      , mtl
                       , semigroups
+                      , tries
+                      , unordered-containers
                       , attoparsec
                       , text
-                      , composition-extra
                       , QuickCheck
                       , sets
+                      , criterion
 
 Source-Repository head
   Type:                 git

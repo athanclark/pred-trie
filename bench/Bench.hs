@@ -9,8 +9,8 @@ import Prelude hiding (lookup)
 import           Data.Trie.Pred
 import           Data.Trie.Pred.Step (PredStep (..), PredSteps (..))
 import           Data.Trie.Class
-import           Data.Trie.Map (MapStep (..))
-import qualified Data.Map as Map
+import           Data.Trie.HashMap (HashMapStep (..))
+import qualified Data.HashMap.Lazy as HM
 import           Data.List.NonEmpty
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
@@ -21,9 +21,10 @@ import           Data.Set.Class as Sets
 
 doubleLit :: RootedPredTrie T.Text Double
 doubleLit = RootedPredTrie Nothing $ PredTrie
-              (MapStep $ unUnion $ foldMap (Union . genStep) [1..100])
+              (HashMapStep $ unUnion $ foldMap (Union . genStep) [1..100])
               (PredSteps [])
-  where genStep n = Map.singleton (T.pack $ show n) (Just n, Nothing)
+  where
+    genStep n = HM.singleton (T.pack $ show n) (Just n, Nothing)
 
 doubleAtto :: RootedPredTrie T.Text Double
 doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredSteps
@@ -35,8 +36,8 @@ doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredSteps
 deepLit :: RootedPredTrie T.Text Double
 deepLit = RootedPredTrie Nothing $ go 10
   where
-    go n | n == 0 = PredTrie (MapStep Map.empty) (PredSteps [])
-         | otherwise = PredTrie (MapStep $ Map.singleton (T.pack $ show n) (Just n, Just $ go (n-1)))
+    go n | n == 0    = PredTrie (HashMapStep HM.empty) (PredSteps [])
+         | otherwise = PredTrie (HashMapStep $ HM.singleton (T.pack $ show n) (Just n, Just $ go (n-1)))
                                 (PredSteps [])
 
 main = defaultMain
