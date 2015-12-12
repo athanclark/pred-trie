@@ -4,6 +4,9 @@
   , FlexibleInstances
   , MultiParamTypeClasses
   , DeriveFunctor
+  , DeriveGeneric
+  , DeriveDataTypeable
+  , TupleSections
   #-}
 
 module Data.Trie.Pred where
@@ -11,37 +14,55 @@ module Data.Trie.Pred where
 import Prelude hiding (lookup)
 import Data.Trie.Pred.Step
 import Data.Trie.Class
-import qualified Data.Trie.Map as MT
-import qualified Data.Map as Map
+import qualified Data.Trie.HashMap as HT
+import qualified Data.HashMap.Lazy as HM
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 
+import Data.Typeable
 import Data.Functor.Syntax
 import Data.Monoid
 import Data.Maybe (fromMaybe)
+import Data.Hashable
+import Test.QuickCheck
 
 
 
 -- * Predicated Trie
 
 data PredTrie s a = PredTrie
-  { predLits  :: MT.MapStep PredTrie s a
+  { predLits  :: HT.HashMapStep PredTrie s a
   , predPreds :: PredSteps PredTrie s a
-  } deriving (Functor)
+  } deriving (Functor, Typeable)
 
-instance Ord s => Trie NonEmpty s PredTrie where
+-- | Dummy instance for quickcheck
+instance Show (PredTrie s a) where
+  show _ = "PredTrie {..}"
+
+instance ( Arbitrary s
+         , Arbitrary a
+         , Eq s
+         , Hashable s
+         ) => Arbitrary (PredTrie s a) where
+  arbitrary = (flip PredTrie $ PredSteps []) <$> arbitrary
+
+instance ( Hashable s
+         , Eq s
+         ) => Trie NonEmpty s PredTrie where
   lookup ts (PredTrie ls ps) =
     getFirst $ First (lookup ts ls) <> First (lookup ts ps)
   delete ts (PredTrie ls ps) = PredTrie (delete ts ls) (delete ts ps)
-  insert ts x (PredTrie ls ps) = PredTrie (insert ts x ls) ps -- can only insert literals
+  insert ts x (PredTrie ls ps) = PredTrie (HT.insert ts x ls) ps -- can only insert literals
 
-instance Ord s => Monoid (PredTrie s a) where
+instance ( Hashable s
+         , Eq s
+         ) => Monoid (PredTrie s a) where
   mempty = PredTrie mempty mempty
   mappend (PredTrie ls1 ps1) (PredTrie ls2 ps2) =
     PredTrie (ls1 <> ls2) (ps1 <> ps2)
 
 emptyPT :: PredTrie s a
-emptyPT = PredTrie MT.empty (PredSteps [])
+emptyPT = PredTrie HT.empty (PredSteps [])
 
 
 
@@ -51,12 +72,14 @@ emptyPT = PredTrie MT.empty (PredSteps [])
 
 -- | Find the nearest parent node of the requested query, while returning
 -- the split of the string that was matched, and what wasn't.
-matchPT :: Ord s => NonEmpty s -> PredTrie s a -> Maybe (NonEmpty s, a, [s])
+matchPT :: ( Hashable s
+           , Eq s
+           ) => NonEmpty s -> PredTrie s a -> Maybe (NonEmpty s, a, [s])
 matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
   First (goLit ls) <> foldMap (First . goPred) ps
   where
-    goLit (MT.MapStep xs) = do
-      (mx,mxs) <- Map.lookup t xs
+    goLit (HT.HashMapStep xs) = do
+      (mx,mxs) <- HM.lookup t xs
       let mFoundHere = do x <- mx
                           return (t:|[], x, [])
       if null ts then mFoundHere
@@ -74,12 +97,14 @@ matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
                    <> First mFoundHere
 
 
-matchesPT :: Ord s => NonEmpty s -> PredTrie s a -> [(NonEmpty s, a, [s])]
+matchesPT :: ( Hashable s
+             , Eq s
+             ) => NonEmpty s -> PredTrie s a -> [(NonEmpty s, a, [s])]
 matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
   fromMaybe [] $ getFirst $ First (goLit ls) <> foldMap (First . goPred) ps
   where
-    goLit (MT.MapStep xs) = do
-      (mx,mxs) <- Map.lookup t xs
+    goLit (HT.HashMapStep xs) = do
+      (mx,mxs) <- HM.lookup t xs
       let mFoundHere = do x <- mx
                           return [(t:|[],x,ts)]
           prependAncestry (pre,x,suff) = (t:| NE.toList pre,x,suff)
@@ -103,19 +128,25 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
 data RootedPredTrie s a = RootedPredTrie
   { rootedBase :: Maybe a
   , rootedSub  :: PredTrie s a
-  } deriving (Functor)
+  } deriving (Functor, Typeable)
 
-instance Ord s => Trie [] s RootedPredTrie where
+
+instance ( Hashable s
+         , Eq s
+         ) => Trie [] s RootedPredTrie where
   lookup [] (RootedPredTrie mx _) = mx
   lookup ts (RootedPredTrie _ xs) = lookup (NE.fromList ts) xs
 
-  delete [] (RootedPredTrie _ xs) = RootedPredTrie Nothing xs
+  delete [] (RootedPredTrie _ xs)  = RootedPredTrie Nothing xs
   delete ts (RootedPredTrie mx xs) = RootedPredTrie mx $ delete (NE.fromList ts) xs
 
-  insert [] x (RootedPredTrie _ xs) = RootedPredTrie (Just x) xs
+  insert [] x (RootedPredTrie _ xs)  = RootedPredTrie (Just x) xs
   insert ts x (RootedPredTrie mx xs) = RootedPredTrie mx $ insert (NE.fromList ts) x xs
 
-instance Ord s => Monoid (RootedPredTrie s a) where
+
+instance ( Hashable s
+         , Eq s
+         ) => Monoid (RootedPredTrie s a) where
   mempty = emptyRPT
   mappend (RootedPredTrie mx xs) (RootedPredTrie my ys) = RootedPredTrie
     (getLast $ Last mx <> Last my) $ xs <> ys
@@ -124,20 +155,22 @@ instance Ord s => Monoid (RootedPredTrie s a) where
 emptyRPT :: RootedPredTrie s a
 emptyRPT = RootedPredTrie Nothing emptyPT
 
-matchRPT :: Ord s => [s] -> RootedPredTrie s a -> Maybe ([s], a, [s])
-matchRPT [] (RootedPredTrie mx _) = do x <- mx
-                                       return ([],x,[])
+matchRPT :: ( Hashable s
+            , Eq s
+            ) => [s] -> RootedPredTrie s a -> Maybe ([s], a, [s])
+matchRPT [] (RootedPredTrie mx _)  = ([],,[]) <$> mx
 matchRPT ts (RootedPredTrie mx xs) = getFirst $
-  First mFoundThere <> First (do x <- mx
-                                 return ([],x,[]))
-  where mFoundThere = do (pre,x,suff) <- matchPT (NE.fromList ts) xs
-                         return (NE.toList pre,x,suff)
+  First mFoundThere <> First (([],,[]) <$> mx)
+  where
+    mFoundThere = do (pre,x,suff) <- matchPT (NE.fromList ts) xs
+                     pure (NE.toList pre,x,suff)
 
-matchesRPT :: Ord s => [s] -> RootedPredTrie s a -> [([s], a, [s])]
-matchesRPT [] (RootedPredTrie mx _) = fromMaybe [] $ do x <- mx
-                                                        return [([],x,[])]
+matchesRPT :: ( Hashable s
+              , Eq s
+              ) => [s] -> RootedPredTrie s a -> [([s], a, [s])]
+matchesRPT [] (RootedPredTrie mx _) = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
 matchesRPT ts (RootedPredTrie mx xs) =
   foundHere ++ fmap allowRoot (matchesPT (NE.fromList ts) xs)
-  where foundHere = fromMaybe [] $ do x <- mx
-                                      return [([],x,[])]
-        allowRoot (pre,x,suff) = (NE.toList pre,x,suff)
+  where
+    foundHere = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
+    allowRoot (pre,x,suff) = (NE.toList pre,x,suff)

@@ -32,6 +32,12 @@ doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredSteps
     eitherToMaybe (Left _) = Nothing
     eitherToMaybe (Right a) = Just a
 
+deepLit :: RootedPredTrie T.Text Double
+deepLit = RootedPredTrie Nothing $ go 10
+  where
+    go n | n == 0 = PredTrie (MapStep Map.empty) (PredSteps [])
+         | otherwise = PredTrie (MapStep $ Map.singleton (T.pack $ show n) (Just n, Just $ go (n-1)))
+                                (PredSteps [])
 
 main = defaultMain
   [ bgroup "Lit vs. Pred"
@@ -49,5 +55,12 @@ main = defaultMain
       , bench "4" $ whnf (lookup ["61"]) doubleAtto
       , bench "4" $ whnf (lookup ["81"]) doubleAtto
       ]
+    ]
+  , bgroup "Lit Deep"
+    [ bench "10" $ whnf (lookup ["10"]) deepLit
+    , bench "9" $ whnf (lookup ["10","9"]) deepLit
+    , bench "8" $ whnf (lookup ["10","9","8"]) deepLit
+    , bench "7" $ whnf (lookup ["10","9","8","7"]) deepLit
+    , bench "6" $ whnf (lookup ["10","9","8","7","6"]) deepLit
     ]
   ]

@@ -16,36 +16,45 @@ Library
   GHC-Options:          -Wall
   Exposed-Modules:      Data.Trie.Pred
                         Data.Trie.Pred.Step
-  Build-Depends:        base >= 4.6 && < 5
-                      , semigroups
-                      , mtl
-                      , containers
+  Build-Depends:        base >= 4.8 && < 5
                       , composition-extra >= 2.0.0
-                      , tries >= 0.0.2
+                      , hashable
+                      , mtl
+                      , semigroups
+                      , tries >= 0.0.3
+                      , unordered-containers
                       , QuickCheck
 
--- Test-Suite spec
---   Type:                 exitcode-stdio-1.0
---   Default-Language:     Haskell2010
---   Hs-Source-Dirs:       src
---                       , test
---   Ghc-Options:          -Wall -threaded
---   Main-Is:              Spec.hs
---   Other-Modules:        Data.Trie.PredSpec
---   Build-Depends:        base
---                       , tasty
---                       , tasty-quickcheck
---                       , tasty-hunit
---                       , QuickCheck
---                       , quickcheck-instances
---                       , semigroups
---                       , mtl
---                       , composition-extra
+Test-Suite spec
+  Type:                 exitcode-stdio-1.0
+  Default-Language:     Haskell2010
+  Hs-Source-Dirs:       src
+                      , test
+  Ghc-Options:          -Wall -threaded
+  Main-Is:              Spec.hs
+  Other-Modules:        Data.Trie.PredSpec
+                        Data.Trie.Pred
+                        Data.Trie.Pred.Step
+  Build-Depends:        base
+                      , composition-extra >= 2.0.0
+                      , deepseq
+                      , hashable
+                      , mtl
+                      , semigroups
+                      , tries >= 0.0.3
+                      , unordered-containers
+                      , tasty
+                      , tasty-quickcheck
+                      , tasty-hunit
+                      , QuickCheck
+                      , quickcheck-instances
 
 Benchmark bench
   Type:                 exitcode-stdio-1.0
   Default-Language:     Haskell2010
   Main-Is:              Bench.hs
+  Other-Modules:        Data.Trie.Pred
+                        Data.Trie.Pred.Step
   HS-Source-Dirs:       bench
                       , src
   Ghc-Options:          -Wall -threaded
