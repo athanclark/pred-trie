@@ -1,0 +1,15 @@
+flags: {}
+packages:
+- '.'
+- location:
+    git: https://github.com/athanclark/tries
+    commit: 0f78a7c6388dd97ba36297a8064ad8876662302c
+  extra-dep: true
+- location:
+    git: https://github.com/athanclark/rose-trees
+    commit: 593327c8d4172f01e3449d819d6cfb3496613b0e
+  extra-dep: true
+extra-deps:
+  - rose-trees-0.0.2.1
+  - composition-extra-2.0.0
+resolver: nightly-2015-12-09
