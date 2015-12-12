@@ -9,6 +9,34 @@
   , TupleSections
   #-}
 
+{- |
+Module      : Data.Trie.Pred
+Copyright   : (c) 2015 Athan Clark
+
+License     : BSD-3
+Maintainer  : athan.clark@gmail.com
+Stability   : experimental
+Portability : GHC
+
+A "predicative" trie is a lookup table where you can embed arbitrary predicates
+as a method to satisfy a node as "found" - this is done with existential quantification.
+To embed our predicates, we need to build the trie's data constructors manually,
+to unify the existential data with the the result function.
+
+As a botched example, you could imagine a "step" of the trie structure as something
+like this:
+
+> PredTrie s a
+>   = PNil
+>   | forall t. PCons
+>       { predicate :: s -> Maybe t
+>       , result    :: t -> a
+>       }
+
+This isn't how it's actually represented, of course - this doesn't acocunt for
+/literal/ matches (i.e. enumerated results).
+-}
+
 module Data.Trie.Pred where
 
 import Prelude hiding (lookup)
@@ -31,8 +59,8 @@ import Test.QuickCheck
 -- * Predicated Trie
 
 data PredTrie s a = PredTrie
-  { predLits  :: HT.HashMapStep PredTrie s a
-  , predPreds :: PredSteps PredTrie s a
+  { predLits  :: HT.HashMapStep PredTrie s a -- ^ a /literal/ step
+  , predPreds :: PredSteps PredTrie s a      -- ^ a /predicative/ step
   } deriving (Functor, Typeable)
 
 -- | Dummy instance for quickcheck
@@ -126,8 +154,8 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
 -- * Rooted Predicated Trie
 
 data RootedPredTrie s a = RootedPredTrie
-  { rootedBase :: Maybe a
-  , rootedSub  :: PredTrie s a
+  { rootedBase :: Maybe a      -- ^ The "root" node - the path at @[]@
+  , rootedSub  :: PredTrie s a -- ^ The actual predicative trie
   } deriving (Functor, Typeable)
 
 

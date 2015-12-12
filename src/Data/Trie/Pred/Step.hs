@@ -9,6 +9,16 @@
   , BangPatterns
   #-}
 
+{- |
+Module      : Data.Trie.Pred
+Copyright   : (c) 2015 Athan Clark
+
+License     : BSD-3
+Maintainer  : athan.clark@gmail.com
+Stability   : experimental
+Portability : GHC
+-}
+
 module Data.Trie.Pred.Step where
 
 import Prelude hiding (lookup)
@@ -24,10 +34,12 @@ import Data.Monoid
 -- * Single Predicated Step
 
 data PredStep c s a = forall r. PredStep
-  { predTag  :: !s -- ^ Unique identifier for the predicate - used for combination
-  , predPred :: s -> Maybe r
-  , predData :: Maybe (r -> a)
-  , predSub  :: c s (r -> a)
+  { predTag  :: !s             -- ^ Unique identifier for the predicate - used for combination
+  , predPred :: s -> Maybe r   -- ^ The predicate, existentially quantified in the successful result @r@
+  , predData :: Maybe (r -> a) -- ^ The result function, capturing the quantified result @r@ and turning
+                               --   it into a top-level variable @a@.
+  , predSub  :: c s (r -> a)   -- ^ Any sub-trie must have __all__ results preceeded in arity with
+                               --   the result at this step.
   } deriving (Typeable)
 
 instance Functor (c s) => Functor (PredStep c s) where
@@ -52,6 +64,7 @@ singletonPred i p x = PredStep i p (Just x) mempty
 
 -- * Adjacent Predicated Steps
 
+-- | Adjacent steps
 newtype PredSteps c s a = PredSteps
   { unPredSteps :: [PredStep c s a]
   } deriving (Functor, Typeable)
