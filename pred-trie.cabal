@@ -36,11 +36,14 @@ Test-Suite spec
                         Data.Trie.Pred
                         Data.Trie.Pred.Step
   Build-Depends:        base
+                      , attoparsec
                       , composition-extra
                       , deepseq
+                      , errors
                       , hashable
                       , mtl
                       , semigroups
+                      , text
                       , tries
                       , unordered-containers
                       , tasty

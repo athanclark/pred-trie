@@ -81,7 +81,7 @@ instance Eq s => Monoid (PredSteps c s a) where
 -- | @Last@-style instance
 unionPred :: Eq s => PredSteps c s a -> PredSteps c s a -> PredSteps c s a
 unionPred (PredSteps (xss@(PredStep i _ _ _):pxs)) (PredSteps (yss@(PredStep j _ _ _):pys))
-  | i == j    = PredSteps $ yss : unPredSteps (unionPred (PredSteps pxs) (PredSteps pys))
+  | i == j    = PredSteps $ yss :       unPredSteps (unionPred (PredSteps pxs) (PredSteps pys))
   | otherwise = PredSteps $ xss : yss : unPredSteps (unionPred (PredSteps pxs) (PredSteps pys))
 unionPred x (PredSteps []) = x
 unionPred (PredSteps []) y = y

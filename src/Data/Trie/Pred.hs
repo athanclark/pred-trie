@@ -108,9 +108,9 @@ matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
   where
     goLit (HT.HashMapStep xs) = do
       (mx,mxs) <- HM.lookup t xs
-      let mFoundHere = do x <- mx
-                          return (t:|[], x, [])
-      if null ts then mFoundHere
+      let mFoundHere = (t:|[],, []) <$> mx
+      if null ts
+      then mFoundHere
       else getFirst $ First (do (pre,y,suff) <- matchPT (NE.fromList ts) =<< mxs
                                 return (t:|NE.toList pre, y, suff))
                    <> First mFoundHere
@@ -119,7 +119,8 @@ matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
       r <- p t
       let mFoundHere = do x <- mx <$~> r
                           return (t:|[], x, [])
-      if null ts then mFoundHere
+      if null ts
+      then mFoundHere
       else getFirst $ First (do (pre,y,suff) <- matchPT (NE.fromList ts) xs
                                 return (t:|NE.toList pre, y r, suff))
                    <> First mFoundHere
@@ -136,7 +137,8 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
       let mFoundHere = do x <- mx
                           return [(t:|[],x,ts)]
           prependAncestry (pre,x,suff) = (t:| NE.toList pre,x,suff)
-      if null ts then mFoundHere
+      if null ts
+      then mFoundHere
       else do foundHere <- mFoundHere
               let rs = fromMaybe [] $ matchesPT (NE.fromList ts) <$> mxs
               return $ foundHere ++ (prependAncestry <$> rs)
@@ -146,7 +148,8 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
       let mFoundHere = do x <- mx <$~> r
                           return [(t:|[],x,ts)]
           prependAncestryAndApply (pre,x,suff) = (t:| NE.toList pre,x r,suff)
-      if null ts then mFoundHere
+      if null ts
+      then mFoundHere
       else do foundHere <- mFoundHere
               let rs = matchesPT (NE.fromList ts) xs
               return $ foundHere ++ (prependAncestryAndApply <$> rs)
@@ -196,7 +199,7 @@ matchRPT ts (RootedPredTrie mx xs) = getFirst $
 matchesRPT :: ( Hashable s
               , Eq s
               ) => [s] -> RootedPredTrie s a -> [([s], a, [s])]
-matchesRPT [] (RootedPredTrie mx _) = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
+matchesRPT [] (RootedPredTrie mx _)  = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
 matchesRPT ts (RootedPredTrie mx xs) =
   foundHere ++ fmap allowRoot (matchesPT (NE.fromList ts) xs)
   where
