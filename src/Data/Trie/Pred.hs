@@ -198,7 +198,7 @@ matchesRPT :: ( Hashable s
               ) => [s] -> RootedPredTrie s a -> [([s], a, [s])]
 matchesRPT [] (RootedPredTrie mx _)  = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
 matchesRPT ts (RootedPredTrie mx xs) =
-  foundHere ++ fmap allowRoot (matchesPT (NE.fromList ts) xs)
+  (foundHere ++) $! fmap allowRoot  (matchesPT (NE.fromList ts) xs)
   where
     foundHere = fromMaybe [] $! (\x -> [([],x,[])]) <$> mx
     allowRoot (pre,x,suff) = (NE.toList pre,x,suff)
