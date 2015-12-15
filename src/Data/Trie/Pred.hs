@@ -7,6 +7,7 @@
   , DeriveGeneric
   , DeriveDataTypeable
   , TupleSections
+  , BangPatterns
   #-}
 
 {- |
@@ -59,13 +60,9 @@ import Test.QuickCheck
 -- * Predicated Trie
 
 data PredTrie s a = PredTrie
-  { predLits  :: HT.HashMapStep PredTrie s a -- ^ a /literal/ step
-  , predPreds :: PredSteps PredTrie s a      -- ^ a /predicative/ step
-  } deriving (Functor, Typeable)
-
--- | Dummy instance for quickcheck
-instance Show (PredTrie s a) where
-  show _ = "PredTrie {..}"
+  { predLits  :: !(HT.HashMapStep PredTrie s a) -- ^ a /literal/ step
+  , predPreds :: !(PredSteps PredTrie s a)      -- ^ a /predicative/ step
+  } deriving (Show, Functor, Typeable)
 
 instance ( Arbitrary s
          , Arbitrary a
@@ -78,7 +75,7 @@ instance ( Hashable s
          , Eq s
          ) => Trie NonEmpty s PredTrie where
   lookup ts (PredTrie ls ps) =
-    getFirst $ First (lookup ts ls) <> First (lookup ts ps)
+    getFirst $ (First $! lookup ts ls) <> First (lookup ts ps)
   delete ts (PredTrie ls ps) = PredTrie (delete ts ls) (delete ts ps)
   insert ts x (PredTrie ls ps) = PredTrie (HT.insert ts x ls) ps -- can only insert literals
 
@@ -87,7 +84,7 @@ instance ( Hashable s
          ) => Monoid (PredTrie s a) where
   mempty = PredTrie mempty mempty
   mappend (PredTrie ls1 ps1) (PredTrie ls2 ps2) =
-    PredTrie (ls1 <> ls2) (ps1 <> ps2)
+    (PredTrie $! ls1 <> ls2) $! ps1 <> ps2
 
 emptyPT :: PredTrie s a
 emptyPT = PredTrie HT.empty (PredSteps [])
@@ -107,7 +104,7 @@ matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
   First (goLit ls) <> foldMap (First . goPred) ps
   where
     goLit (HT.HashMapStep xs) = do
-      (mx,mxs) <- HM.lookup t xs
+      (HT.HashMapChildren mx mxs) <- HM.lookup t xs
       let mFoundHere = (t:|[],, []) <$> mx
       if null ts
       then mFoundHere
@@ -133,15 +130,15 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
   fromMaybe [] $ getFirst $ First (goLit ls) <> foldMap (First . goPred) ps
   where
     goLit (HT.HashMapStep xs) = do
-      (mx,mxs) <- HM.lookup t xs
+      (HT.HashMapChildren mx mxs) <- HM.lookup t xs
       let mFoundHere = do x <- mx
                           return [(t:|[],x,ts)]
           prependAncestry (pre,x,suff) = (t:| NE.toList pre,x,suff)
       if null ts
       then mFoundHere
       else do foundHere <- mFoundHere
-              let rs = fromMaybe [] $ matchesPT (NE.fromList ts) <$> mxs
-              return $ foundHere ++ (prependAncestry <$> rs)
+              let rs = fromMaybe [] $! matchesPT (NE.fromList ts) <$> mxs
+              return $! foundHere ++ (prependAncestry <$> rs)
 
     goPred (PredStep _ p mx xs) = do
       r <- p t
@@ -152,14 +149,14 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
       then mFoundHere
       else do foundHere <- mFoundHere
               let rs = matchesPT (NE.fromList ts) xs
-              return $ foundHere ++ (prependAncestryAndApply <$> rs)
+              return $! foundHere ++ (prependAncestryAndApply <$> rs)
 
 -- * Rooted Predicated Trie
 
 data RootedPredTrie s a = RootedPredTrie
-  { rootedBase :: Maybe a      -- ^ The "root" node - the path at @[]@
-  , rootedSub  :: PredTrie s a -- ^ The actual predicative trie
-  } deriving (Functor, Typeable)
+  { rootedBase :: !(Maybe a)      -- ^ The "root" node - the path at @[]@
+  , rootedSub  :: !(PredTrie s a) -- ^ The actual predicative trie
+  } deriving (Show, Functor, Typeable)
 
 
 instance ( Hashable s
@@ -169,10 +166,10 @@ instance ( Hashable s
   lookup ts (RootedPredTrie _ xs) = lookup (NE.fromList ts) xs
 
   delete [] (RootedPredTrie _ xs)  = RootedPredTrie Nothing xs
-  delete ts (RootedPredTrie mx xs) = RootedPredTrie mx $ delete (NE.fromList ts) xs
+  delete ts (RootedPredTrie mx xs) = RootedPredTrie mx $! delete (NE.fromList ts) xs
 
   insert [] x (RootedPredTrie _ xs)  = RootedPredTrie (Just x) xs
-  insert ts x (RootedPredTrie mx xs) = RootedPredTrie mx $ insert (NE.fromList ts) x xs
+  insert ts x (RootedPredTrie mx xs) = RootedPredTrie mx $! insert (NE.fromList ts) x xs
 
 
 instance ( Hashable s
@@ -180,7 +177,7 @@ instance ( Hashable s
          ) => Monoid (RootedPredTrie s a) where
   mempty = emptyRPT
   mappend (RootedPredTrie mx xs) (RootedPredTrie my ys) = RootedPredTrie
-    (getLast $ Last mx <> Last my) $ xs <> ys
+    (getLast $! Last mx <> Last my) $! xs <> ys
 
 
 emptyRPT :: RootedPredTrie s a
@@ -203,5 +200,5 @@ matchesRPT [] (RootedPredTrie mx _)  = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
 matchesRPT ts (RootedPredTrie mx xs) =
   foundHere ++ fmap allowRoot (matchesPT (NE.fromList ts) xs)
   where
-    foundHere = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
+    foundHere = fromMaybe [] $! (\x -> [([],x,[])]) <$> mx
     allowRoot (pre,x,suff) = (NE.toList pre,x,suff)
