@@ -3,11 +3,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/athanclark/tries
-    commit: ac02376ce1d8e4b2ba2f5b9723318bd34bab194f
-  extra-dep: true
-- location:
-    git: https://github.com/athanclark/rose-trees
-    commit: 593327c8d4172f01e3449d819d6cfb3496613b0e
+    commit: eb740126072a1c8da175cd28caadbff7bef3e7f5
   extra-dep: true
 extra-deps:
   - rose-trees-0.0.3
