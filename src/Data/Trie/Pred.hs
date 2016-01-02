@@ -19,23 +19,46 @@ Maintainer  : athan.clark@gmail.com
 Stability   : experimental
 Portability : GHC
 
-A "predicative" trie is a lookup table where you can embed arbitrary predicates
-as a method to satisfy a node as "found" - this is done with existential quantification.
-To embed our predicates, we need to build the trie's data constructors manually,
-to unify the existential data with the the result function.
+A "predicative" trie is a lookup table where you can use /predicates/
+as a method to match a query path, where success is also enriched with /any/
+auxiliary data. This library allows you to match a path-chunk (if you consider
+a query to the different levels of the tree as a /list/) with a Boolean predicate,
+augmented with existentially quantified data. This lets us use parsers, regular
+expressions, and other functions that can be turned into the form of:
 
-As a botched example, you could imagine a "step" of the trie structure as something
-like this:
+> forall a. p -> Maybe a
 
-> PredTrie s a
->   = PNil
->   | forall t. PCons
->       { predicate :: s -> Maybe t
->       , result    :: t -> a
+However, because the communicated data is existentially quantified, we __cannot__
+revisit a definition - we cannot @update@ a predicative node, or change any of
+its children. The current version of this library forces you to use 'PredTrie'
+and 'RootedPredTrie' directly (i.e. the data constructors) to build your trie
+manually.
+
+This isn't the actual code, but it's a general idea for how you could build a
+trie. We build a "tagged" <https://en.wikipedia.org/wiki/Rose_tree rose-tree>,
+where each node has either a literal name (and is a singleton of the @k@ type in our
+lookup path) or a predicate to consider the current node or its children as the target.
+You could imagine a "step" of the trie structure as something like this:
+
+> data PredTrie k a
+>   = Nil
+>   | Lit
+>       { litTag       :: k
+>       , litResult    :: Maybe a
+>       , litChildren  :: Maybe (PredTrie k a)
+>       }
+>   | forall t. Pred
+>       { predMatch    :: k -> Maybe t
+>       , predResult   :: Maybe (t -> a)
+>       , predChildren :: Maybe (PredTrie k a)
 >       }
 
-This isn't how it's actually represented, of course - this doesn't acocunt for
-/literal/ matches (i.e. enumerated results).
+Notice how in the @Pred@ constructor, we first /create/ the @t@ data in @predMatch@,
+then /consume/ it in @predResult@. We make a tree out of steps by recursing over the
+steps.
+
+This isn't how it's actually represented, unfortunately. There will be a
+monadic interface in the next version.
 -}
 
 module Data.Trie.Pred where
@@ -59,36 +82,35 @@ import Test.QuickCheck
 
 -- * Predicated Trie
 
-data PredTrie s a = PredTrie
-  { predLits  :: !(HT.HashMapStep PredTrie s a) -- ^ a /literal/ step
-  , predPreds :: !(PredSteps PredTrie s a)      -- ^ a /predicative/ step
+data PredTrie k a = PredTrie
+  { predLits  :: !(HT.HashMapStep PredTrie k a) -- ^ a /literal/ step
+  , predPreds :: !(PredSteps PredTrie k a)      -- ^ a /predicative/ step
   } deriving (Show, Functor, Typeable)
 
-instance ( Arbitrary s
+instance ( Arbitrary k
          , Arbitrary a
-         , Eq s
-         , Hashable s
-         ) => Arbitrary (PredTrie s a) where
+         , Eq k
+         , Hashable k
+         ) => Arbitrary (PredTrie k a) where
   arbitrary = (flip PredTrie $ PredSteps []) <$> arbitrary
 
-instance ( Hashable s
-         , Eq s
-         ) => Trie NonEmpty s PredTrie where
+instance ( Hashable k
+         , Eq k
+         ) => Trie NonEmpty k PredTrie where
   lookup ts (PredTrie ls ps) =
     getFirst $ (First $! lookup ts ls) <> First (lookup ts ps)
   delete ts (PredTrie ls ps) = PredTrie (delete ts ls) (delete ts ps)
   insert ts x (PredTrie ls ps) = PredTrie (HT.insert ts x ls) ps -- can only insert literals
 
-instance ( Hashable s
-         , Eq s
-         ) => Monoid (PredTrie s a) where
+instance ( Hashable k
+         , Eq k
+         ) => Monoid (PredTrie k a) where
   mempty = PredTrie mempty mempty
   mappend (PredTrie ls1 ps1) (PredTrie ls2 ps2) =
     (PredTrie $! ls1 <> ls2) $! ps1 <> ps2
 
-emptyPT :: PredTrie s a
+emptyPT :: PredTrie k a
 emptyPT = PredTrie HT.empty (PredSteps [])
-
 
 
 -- subtrie :: Ord s => NonEmpty s -> PredTrie s a -> PredTrie s a
@@ -97,9 +119,9 @@ emptyPT = PredTrie HT.empty (PredSteps [])
 
 -- | Find the nearest parent node of the requested query, while returning
 -- the split of the string that was matched, and what wasn't.
-matchPT :: ( Hashable s
-           , Eq s
-           ) => NonEmpty s -> PredTrie s a -> Maybe (NonEmpty s, a, [s])
+matchPT :: ( Hashable k
+           , Eq k
+           ) => NonEmpty k -> PredTrie k a -> Maybe (NonEmpty k, a, [k])
 matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
   First (goLit ls) <> foldMap (First . goPred) ps
   where
@@ -123,9 +145,9 @@ matchPT (t:|ts) (PredTrie ls (PredSteps ps)) = getFirst $
                    <> First mFoundHere
 
 
-matchesPT :: ( Hashable s
-             , Eq s
-             ) => NonEmpty s -> PredTrie s a -> [(NonEmpty s, a, [s])]
+matchesPT :: ( Hashable k
+             , Eq k
+             ) => NonEmpty k -> PredTrie k a -> [(NonEmpty k, a, [k])]
 matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
   fromMaybe [] $ getFirst $ First (goLit ls) <> foldMap (First . goPred) ps
   where
@@ -151,17 +173,17 @@ matchesPT (t:|ts) (PredTrie ls (PredSteps ps)) =
               let rs = matchesPT (NE.fromList ts) xs
               return $! foundHere ++ (prependAncestryAndApply <$> rs)
 
--- * Rooted Predicated Trie
+-- * Rooted Predicative Trie
 
-data RootedPredTrie s a = RootedPredTrie
+data RootedPredTrie k a = RootedPredTrie
   { rootedBase :: !(Maybe a)      -- ^ The "root" node - the path at @[]@
-  , rootedSub  :: !(PredTrie s a) -- ^ The actual predicative trie
+  , rootedSub  :: !(PredTrie k a) -- ^ The actual predicative trie
   } deriving (Show, Functor, Typeable)
 
 
-instance ( Hashable s
-         , Eq s
-         ) => Trie [] s RootedPredTrie where
+instance ( Hashable k
+         , Eq k
+         ) => Trie [] k RootedPredTrie where
   lookup [] (RootedPredTrie mx _) = mx
   lookup ts (RootedPredTrie _ xs) = lookup (NE.fromList ts) xs
 
@@ -172,20 +194,20 @@ instance ( Hashable s
   insert ts x (RootedPredTrie mx xs) = RootedPredTrie mx $! insert (NE.fromList ts) x xs
 
 
-instance ( Hashable s
-         , Eq s
-         ) => Monoid (RootedPredTrie s a) where
+instance ( Hashable k
+         , Eq k
+         ) => Monoid (RootedPredTrie k a) where
   mempty = emptyRPT
   mappend (RootedPredTrie mx xs) (RootedPredTrie my ys) = RootedPredTrie
     (getLast $! Last mx <> Last my) $! xs <> ys
 
 
-emptyRPT :: RootedPredTrie s a
+emptyRPT :: RootedPredTrie k a
 emptyRPT = RootedPredTrie Nothing emptyPT
 
-matchRPT :: ( Hashable s
-            , Eq s
-            ) => [s] -> RootedPredTrie s a -> Maybe ([s], a, [s])
+matchRPT :: ( Hashable k
+            , Eq k
+            ) => [k] -> RootedPredTrie k a -> Maybe ([k], a, [k])
 matchRPT [] (RootedPredTrie mx _)  = ([],,[]) <$> mx
 matchRPT ts (RootedPredTrie mx xs) = getFirst $
   First mFoundThere <> First (([],,[]) <$> mx)
@@ -193,9 +215,9 @@ matchRPT ts (RootedPredTrie mx xs) = getFirst $
     mFoundThere = do (pre,x,suff) <- matchPT (NE.fromList ts) xs
                      pure (NE.toList pre,x,suff)
 
-matchesRPT :: ( Hashable s
-              , Eq s
-              ) => [s] -> RootedPredTrie s a -> [([s], a, [s])]
+matchesRPT :: ( Hashable k
+              , Eq k
+              ) => [k] -> RootedPredTrie k a -> [([k], a, [k])]
 matchesRPT [] (RootedPredTrie mx _)  = fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
 matchesRPT ts (RootedPredTrie mx xs) =
   (foundHere ++) $! fmap allowRoot  (matchesPT (NE.fromList ts) xs)
