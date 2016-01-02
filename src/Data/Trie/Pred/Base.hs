@@ -4,14 +4,12 @@
   , FlexibleInstances
   , MultiParamTypeClasses
   , DeriveFunctor
-  , DeriveGeneric
   , DeriveDataTypeable
   , TupleSections
-  , BangPatterns
   #-}
 
 {- |
-Module      : Data.Trie.Pred
+Module      : Data.Trie.Pred.Base
 Copyright   : (c) 2015 Athan Clark
 
 License     : BSD-3
@@ -57,14 +55,15 @@ Notice how in the @Pred@ constructor, we first /create/ the @t@ data in @predMat
 then /consume/ it in @predResult@. We make a tree out of steps by recursing over the
 steps.
 
-This isn't how it's actually represented, unfortunately. There will be a
-monadic interface in the next version.
+This isn't how it's actually represented internally, but serves to help see the
+representation. If you want to build tries
+and perform lookups casually, please see the "Data.Trie.Pred.Interface" module.
 -}
 
-module Data.Trie.Pred where
+module Data.Trie.Pred.Base where
 
 import Prelude hiding (lookup)
-import Data.Trie.Pred.Step
+import Data.Trie.Pred.Base.Step
 import Data.Trie.Class
 import qualified Data.Trie.HashMap as HT
 import qualified Data.HashMap.Lazy as HM
@@ -84,7 +83,7 @@ import Test.QuickCheck
 
 data PredTrie k a = PredTrie
   { predLits  :: !(HT.HashMapStep PredTrie k a) -- ^ a /literal/ step
-  , predPreds :: !(PredSteps PredTrie k a)      -- ^ a /predicative/ step
+  , predPreds :: !(PredSteps k PredTrie k a)      -- ^ a /predicative/ step
   } deriving (Show, Functor, Typeable)
 
 instance ( Arbitrary k
@@ -92,7 +91,7 @@ instance ( Arbitrary k
          , Eq k
          , Hashable k
          ) => Arbitrary (PredTrie k a) where
-  arbitrary = (flip PredTrie $ PredSteps []) <$> arbitrary
+  arbitrary = flip PredTrie (PredSteps []) <$> arbitrary
 
 instance ( Hashable k
          , Eq k

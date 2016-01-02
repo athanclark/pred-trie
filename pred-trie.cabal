@@ -1,5 +1,5 @@
 Name:                   pred-trie
-Version:                0.4.1
+Version:                0.5.0
 Author:                 Athan Clark <athan.clark@gmail.com>
 Maintainer:             Athan Clark <athan.clark@gmail.com>
 License:                BSD3
@@ -14,12 +14,15 @@ Library
   Default-Language:     Haskell2010
   HS-Source-Dirs:       src
   GHC-Options:          -Wall
-  Exposed-Modules:      Data.Trie.Pred
-                        Data.Trie.Pred.Step
+  Exposed-Modules:      Data.Trie.Pred.Base
+                        Data.Trie.Pred.Base.Step
+                        Data.Trie.Pred.Interface
+                        Data.Trie.Pred.Interface.Types
   Build-Depends:        base >= 4.8 && < 5
                       , composition-extra >= 2.0.0
                       , hashable
                       , mtl
+                      , poly-arity >= 0.0.7
                       , semigroups
                       , text
                       , tries >= 0.0.4
@@ -34,8 +37,10 @@ Test-Suite spec
   Ghc-Options:          -Wall -threaded
   Main-Is:              Spec.hs
   Other-Modules:        Data.Trie.PredSpec
-                        Data.Trie.Pred
-                        Data.Trie.Pred.Step
+                        Data.Trie.Pred.Base
+                        Data.Trie.Pred.Base.Step
+                        Data.Trie.Pred.Interface
+                        Data.Trie.Pred.Interface.Types
   Build-Depends:        base
                       , attoparsec
                       , composition-extra
@@ -43,6 +48,7 @@ Test-Suite spec
                       , errors
                       , hashable
                       , mtl
+                      , poly-arity
                       , semigroups
                       , text
                       , tries
@@ -57,8 +63,10 @@ Benchmark bench
   Type:                 exitcode-stdio-1.0
   Default-Language:     Haskell2010
   Main-Is:              Bench.hs
-  Other-Modules:        Data.Trie.Pred
-                        Data.Trie.Pred.Step
+  Other-Modules:        Data.Trie.Pred.Base
+                        Data.Trie.Pred.Base.Step
+                        Data.Trie.Pred.Interface
+                        Data.Trie.Pred.Interface.Types
   HS-Source-Dirs:       bench
                       , src
   Ghc-Options:          -Wall -threaded
@@ -67,6 +75,7 @@ Benchmark bench
                       , deepseq
                       , hashable
                       , mtl
+                      , poly-arity
                       , semigroups
                       , tries
                       , unordered-containers
