@@ -14,7 +14,8 @@ Library
   Default-Language:     Haskell2010
   HS-Source-Dirs:       src
   GHC-Options:          -Wall
-  Exposed-Modules:      Data.Trie.Pred.Base
+  Exposed-Modules:      Data.Trie.Pred
+                        Data.Trie.Pred.Base
                         Data.Trie.Pred.Base.Step
                         Data.Trie.Pred.Interface
                         Data.Trie.Pred.Interface.Types
@@ -24,7 +25,6 @@ Library
                       , mtl
                       , poly-arity >= 0.0.7
                       , semigroups
-                      , text
                       , tries >= 0.0.4
                       , unordered-containers
                       , QuickCheck
@@ -37,6 +37,7 @@ Test-Suite spec
   Ghc-Options:          -Wall -threaded
   Main-Is:              Spec.hs
   Other-Modules:        Data.Trie.PredSpec
+                        Data.Trie.Pred
                         Data.Trie.Pred.Base
                         Data.Trie.Pred.Base.Step
                         Data.Trie.Pred.Interface
@@ -50,7 +51,6 @@ Test-Suite spec
                       , mtl
                       , poly-arity
                       , semigroups
-                      , text
                       , tries
                       , unordered-containers
                       , tasty
@@ -63,7 +63,8 @@ Benchmark bench
   Type:                 exitcode-stdio-1.0
   Default-Language:     Haskell2010
   Main-Is:              Bench.hs
-  Other-Modules:        Data.Trie.Pred.Base
+  Other-Modules:        Data.Trie.Pred
+                        Data.Trie.Pred.Base
                         Data.Trie.Pred.Base.Step
                         Data.Trie.Pred.Interface
                         Data.Trie.Pred.Interface.Types
@@ -80,7 +81,6 @@ Benchmark bench
                       , tries
                       , unordered-containers
                       , attoparsec
-                      , text
                       , QuickCheck
                       , sets
                       , criterion
