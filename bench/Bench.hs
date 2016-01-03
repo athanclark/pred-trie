@@ -6,8 +6,8 @@ module Main where
 
 
 import Prelude hiding (lookup)
-import           Data.Trie.Pred
-import           Data.Trie.Pred.Step (PredStep (..), PredSteps (..))
+import           Data.Trie.Pred.Base
+import           Data.Trie.Pred.Base.Step (PredStep (..), PredSteps (..))
 import           Data.Trie.Class
 import           Data.Trie.HashMap (HashMapStep (..), HashMapChildren (..))
 import qualified Data.HashMap.Lazy as HM

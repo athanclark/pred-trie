@@ -51,6 +51,7 @@ Test-Suite spec
                       , mtl
                       , poly-arity
                       , semigroups
+                      , text
                       , tries
                       , unordered-containers
                       , tasty
@@ -72,15 +73,16 @@ Benchmark bench
                       , src
   Ghc-Options:          -Wall -threaded
   Build-Depends:        base
+                      , attoparsec
                       , composition-extra
                       , deepseq
                       , hashable
                       , mtl
                       , poly-arity
                       , semigroups
+                      , text
                       , tries
                       , unordered-containers
-                      , attoparsec
                       , QuickCheck
                       , sets
                       , criterion

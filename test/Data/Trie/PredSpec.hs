@@ -4,8 +4,8 @@
 
 module Data.Trie.PredSpec where
 
-import Data.Trie.Pred
-import Data.Trie.Pred.Step
+import Data.Trie.Pred.Base
+import Data.Trie.Pred.Base.Step
 import Data.Trie.Class
 import Data.Trie.HashMap (HashMapStep (..))
 import Data.List.NonEmpty (NonEmpty (..))
