@@ -1,5 +1,7 @@
 module Data.Trie.Pred.Mutable.Set where
 
+import Prelude hiding (lookup)
+
 import Data.Monoid
 
 import           Data.HSet.Mutable (HSet, HKey)
@@ -17,32 +19,53 @@ data CachedPred s k a = CachedPred
   , cachedPredCache :: {-# UNPACK #-} !(HashTable s k a)
   }
 
-newCachedPred :: (k -> Maybe a) -> ST s (CachedPred s k a)
+newCachedPred :: (k -> Maybe a)
+              -> ST s (CachedPred s k a)
 newCachedPred pred = CachedPred pred <$> HT.new
 
 query :: ( Eq k
          , Hashable k
-         ) => k -> CachedPred s k a -> ST s (Maybe a)
+         ) => k
+           -> CachedPred s k a
+           -> ST s (Maybe a)
 query k (CachedPred pred cache) =
       (\mx -> getFirst $! First mx <> First (pred k))
   <$> HT.lookup cache k
 
 
-newtype PredSet k s = PredSet
+newtype PredSet s k = PredSet
   { getPredSet :: HSet s
   }
 
-newtype PredKey k a = PredKey
-  { getPredKey :: HKey (k -> Maybe a)
+newtype PredKey s k a = PredKey
+  { getPredKey :: HKey (CachedPred s k a)
   }
 
 
-new :: ST s (PredSet k s)
+new :: ST s (PredSet s k)
 new = PredSet <$> HS.new
 
 insert :: ( Typeable k
           , Typeable a
+          , Typeable s
           ) => (k -> Maybe a)
-            -> PredSet k s
-            -> ST s (PredKey k a)
-insert pred (PredSet xs) = PredKey <$> HS.insert pred xs
+            -> PredSet s k
+            -> ST s (PredKey s k a)
+insert pred (PredSet xs) = do
+  cache <- newCachedPred pred
+  PredKey <$> HS.insert cache xs
+
+lookup :: ( Eq k
+          , Hashable k
+          , Typeable s
+          , Typeable k
+          , Typeable a
+          ) => PredKey s k a
+            -> k
+            -> PredSet s k
+            -> ST s (Maybe a)
+lookup (PredKey i) k (PredSet xs) = do
+  mCachedPred <- HS.lookup i xs
+  case mCachedPred of
+    Nothing    -> pure Nothing
+    Just cache -> query k cache
