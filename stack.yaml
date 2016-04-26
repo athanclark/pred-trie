@@ -8,4 +8,5 @@ packages:
 extra-deps:
   - rose-trees-0.0.3
   - composition-extra-2.0.0
-resolver: nightly-2015-12-10
+  - HSet-0.0.0
+resolver: nightly-2016-04-15
