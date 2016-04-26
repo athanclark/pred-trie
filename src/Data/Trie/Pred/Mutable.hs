@@ -1,7 +1,5 @@
 {-# LANGUAGE
     ExistentialQuantification
-  , ScopedTypeVariables
-  , Rank2Types
   #-}
 
 module Data.Trie.Pred.Mutable where
@@ -76,7 +74,6 @@ lookup :: ( Eq k
           , Hashable k
           , Typeable s
           , Typeable k
-          , Typeable a
           ) => PredSet s k
             -> NonEmpty k
             -> HashTableTrie s k a
