@@ -1,6 +1,7 @@
 flags: {}
 packages:
 - '.'
+- '../pred-set'
 - location:
     git: https://github.com/athanclark/tries
     commit: eb740126072a1c8da175cd28caadbff7bef3e7f5
@@ -8,5 +9,6 @@ packages:
 extra-deps:
   - rose-trees-0.0.3
   - composition-extra-2.0.0
+  - pred-set-0.0.1
   - HSet-0.0.0
 resolver: nightly-2016-04-15

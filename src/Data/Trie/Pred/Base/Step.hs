@@ -35,7 +35,7 @@ data PredStep k c s a = forall r. PredStep
   { -- | Unique identifier for the predicate - used for combination
     predTag  :: !k
   , -- | The predicate, existentially quantified in the successful result @r@
-    predPred :: !(s -> Maybe r) 
+    predPred :: !(s -> Maybe r)
   , -- | The result function, capturing the quantified result @r@ and turning
     --   it into a top-level variable @a@.
     predData :: !(Maybe (r -> a))

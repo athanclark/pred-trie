@@ -19,14 +19,14 @@ Library
                         Data.Trie.Pred.Base.Step
                         Data.Trie.Pred.Interface
                         Data.Trie.Pred.Interface.Types
-                        Data.Trie.Pred.Mutable.Set
+                        Data.Trie.Pred.Mutable
   Build-Depends:        base >= 4.8 && < 5
                       , composition-extra >= 2.0.0
                       , hashable
                       , hashtables
-                      , HSet
                       , mtl
                       , poly-arity >= 0.0.7
+                      , pred-set
                       , semigroups
                       , tries >= 0.0.4
                       , unordered-containers
