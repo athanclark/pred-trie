@@ -129,7 +129,7 @@ insert :: ( Monad m
             -> childContent
             -> PTBuilderT k resultContent m ()
 insert !ts !vl =
-  modify' ((singleton ts vl) <>)
+  modify' (singleton ts vl <>)
 
 
 insertHere :: ( Monad m
@@ -150,7 +150,7 @@ prefix :: ( Monad m
             -> PTBuilderT k resultContent m ()
 prefix !ts cs = do
   trie <- lift (execPTBuilderT cs)
-  modify' ((extrude ts trie) <>)
+  modify' (extrude ts trie <>)
 
 
 lookup :: ( Eq k
