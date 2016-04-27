@@ -51,6 +51,7 @@ import qualified Data.Trie.HashMap as HT
 import qualified Data.HashMap.Lazy as HM
 import Data.Hashable
 import Data.Function.Poly
+import Data.Typeable
 
 import Data.String (IsString (..))
 
@@ -92,6 +93,7 @@ instance ( Eq k
 -- | Existentially quantified case
 instance ( Eq k
          , Hashable k
+         , Typeable r
          ) => Extend (PathChunk k ('Just r)) (RootedPredTrie k (r -> a)) (RootedPredTrie k a) where
   extend (Pred i q) (RootedPredTrie mx xs) = RootedPredTrie Nothing $
     PredTrie mempty (PredSteps [PredStep i q mx xs])

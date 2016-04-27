@@ -31,7 +31,7 @@ import Data.Monoid
 
 -- * Single Predicated Step
 
-data PredStep k c s a = forall r. PredStep
+data PredStep k c s a = forall r. Typeable r => PredStep
   { -- | Unique identifier for the predicate - used for combination
     predTag  :: !k
   , -- | The predicate, existentially quantified in the successful result @r@
@@ -65,7 +65,9 @@ instance Trie NonEmpty s c => Trie NonEmpty s (PredStep k c) where
                else PredStep i p mx $! delete (NE.fromList ts) xs)
       (p t)
 
-singletonPred :: Monoid (c s (r -> a)) => k -> (s -> Maybe r) -> (r -> a) -> PredStep k c s a
+singletonPred :: ( Monoid (c s (r -> a))
+                 , Typeable r
+                 ) => k -> (s -> Maybe r) -> (r -> a) -> PredStep k c s a
 singletonPred i p x = PredStep i p (Just x) mempty
 
 

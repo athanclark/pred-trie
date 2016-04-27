@@ -185,7 +185,6 @@ matches predSet (k:|ks) (HashTableTrie raw preds) = do
                   foundThere <- matches predSet (k':|ks') children
                   pure . Just $! foundHere ++ (prependAncestry <$> foundThere)
 
-
     goPred (PredStep predKey mx children) = do
       mr <- HS.lookup predKey k predSet
       case mr of

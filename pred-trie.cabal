@@ -20,8 +20,10 @@ Library
                         Data.Trie.Pred.Interface
                         Data.Trie.Pred.Interface.Types
                         Data.Trie.Pred.Mutable
+                        Data.Trie.Pred.Mutable.Morph
   Build-Depends:        base >= 4.8 && < 5
                       , composition-extra >= 2.0.0
+                      , containers
                       , hashable
                       , hashtables
                       , mtl
