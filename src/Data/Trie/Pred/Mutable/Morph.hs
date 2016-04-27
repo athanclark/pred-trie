@@ -21,6 +21,21 @@ import Data.Proxy
 import Data.STRef
 
 
+
+toMutable :: ( Eq k
+             , Hashable k
+             , Ord k
+             , Typeable s
+             , Typeable k
+             , Typeable a
+             ) => PredTrie k a
+               -> ST s (HashTableTrie s k a)
+toMutable xs = do
+  predRefs <- newSTRef Map.empty
+  predSet  <- HS.new
+  toHashTableTrie predRefs predSet xs
+
+
 toHashTableTrie :: ( Eq k
                    , Hashable k
                    , Ord k

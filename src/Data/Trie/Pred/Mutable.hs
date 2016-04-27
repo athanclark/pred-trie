@@ -201,3 +201,48 @@ matches predSet (k:|ks) (HashTableTrie raw preds) = do
                 Just foundHere -> do
                   foundThere <- matches predSet (k':|ks') children
                   pure . Just $! foundHere ++ (prependAncestryAndApply <$> foundThere)
+
+
+data RootedHashTableTrie s k a = RootedHashTableTrie
+  { rootedBase :: !(Maybe a)
+  , rootedSub  :: !(HashTableTrie s k a)
+  }
+
+newR :: ST s (RootedHashTableTrie s k a)
+newR = RootedHashTableTrie Nothing <$> new
+
+matchR :: ( Eq k
+          , Hashable k
+          , Typeable s
+          , Typeable k
+          , Typeable a
+          ) => PredSet s k
+            -> [k]
+            -> RootedHashTableTrie s k a
+            -> ST s (Maybe ([k],a,[k]))
+matchR _ [] (RootedHashTableTrie mx _) =
+  pure $! (\x -> ([],x,[])) <$> mx
+matchR predSet (k:ks) (RootedHashTableTrie mx xs) = do
+  mFoundThere <- match predSet (k:|ks) xs
+  pure $! getFirst $
+      First ((\(pre,x,suff) -> (toList pre,x,suff)) <$> mFoundThere)
+   <> First ((\x -> ([],x,k:ks)) <$> mx)
+
+
+matchesR :: ( Eq k
+            , Hashable k
+            , Typeable s
+            , Typeable k
+            , Typeable a
+            ) => PredSet s k
+              -> [k]
+              -> RootedHashTableTrie s k a
+              -> ST s [([k],a,[k])]
+matchesR _ [] (RootedHashTableTrie mx _) =
+  pure $! fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
+matchesR predSet (k:ks) (RootedHashTableTrie mx xs) = do
+  foundThere <- matches predSet (k:|ks) xs
+  pure $! foundHere ++ (allowRoot <$> foundThere)
+  where
+    foundHere = fromMaybe [] $ (\x -> [([],x,k:ks)]) <$> mx
+    allowRoot (pre,x,suff) = (toList pre,x,suff)
