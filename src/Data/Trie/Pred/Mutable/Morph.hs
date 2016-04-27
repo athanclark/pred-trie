@@ -54,7 +54,8 @@ toMutablePredStep predRefs predSet (B.PredStep tag pred mx children) = do
   predKey  <- case mPredKey of
                 Nothing -> HS.insert pred predSet
                 Just x  -> pure x
-  undefined
+  children' <- toHashTableTrie children
+  pure (M.PredStep predKey mx children')
 
 
 -- Wiiiked abuse of the type system
