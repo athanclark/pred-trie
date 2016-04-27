@@ -18,18 +18,38 @@ import Data.Typeable
 import Data.Dynamic
 import Data.Hashable
 import Data.Proxy
+import Data.STRef
 
 
-toHashTableTrie :: PredTrie k a -> ST s (HashTableTrie s k a)
-toHashTableTrie (PredTrie (HashMapStep raw) preds) = undefined
+toHashTableTrie :: ( Eq k
+                   , Hashable k
+                   , Ord k
+                   , Typeable s
+                   , Typeable k
+                   , Typeable a
+                   ) => STRef s (HMap k)
+                     -> PredSet s k
+                     -> PredTrie k a
+                     -> ST s (HashTableTrie s k a)
+toHashTableTrie predRefs predSet (PredTrie (HashMapStep raw) (PredSteps preds)) = do
+  raw' <- toHashTable =<< traverse (toRawValue predRefs predSet) raw
+  preds' <- mapM (toMutablePredStep predRefs predSet) preds
+  pure (HashTableTrie raw' preds')
 
-
-toRawValue :: HashMapChildren PredTrie k a
-           -> ST s (RawValue s k a)
-toRawValue (HashMapChildren mx mchildren) = do
+toRawValue :: ( Eq k
+              , Hashable k
+              , Ord k
+              , Typeable s
+              , Typeable k
+              , Typeable a
+              ) => STRef s (HMap k)
+                -> PredSet s k
+                -> HashMapChildren PredTrie k a
+                -> ST s (RawValue s k a)
+toRawValue predRefs predSet (HashMapChildren mx mchildren) = do
   children <- case mchildren of
                 Nothing -> M.new
-                Just xs -> toHashTableTrie xs
+                Just xs -> toHashTableTrie predRefs predSet xs
   pure (RawValue mx children)
 
 toHashTable :: ( Eq k
@@ -42,19 +62,24 @@ toHashTable xs = do
   pure fresh
 
 toMutablePredStep :: ( Ord k
+                     , Eq k
+                     , Hashable k
                      , Typeable s
                      , Typeable k
                      , Typeable a
-                     ) => HMap k
+                     ) => STRef s (HMap k)
                        -> PredSet s k
                        -> B.PredStep k PredTrie k a
                        -> ST s (M.PredStep s k a)
 toMutablePredStep predRefs predSet (B.PredStep tag pred mx children) = do
-  mPredKey <- lookupPredKey tag (pure pred) predRefs
+  predRefs' <- readSTRef predRefs
+  mPredKey <- lookupPredKey tag (pure pred) predRefs'
   predKey  <- case mPredKey of
-                Nothing -> HS.insert pred predSet
+                Nothing -> do predKey' <- HS.insert pred predSet
+                              writeSTRef predRefs (insertPredKey tag predKey' predRefs')
+                              pure predKey'
                 Just x  -> pure x
-  children' <- toHashTableTrie children
+  children' <- toHashTableTrie predRefs predSet children
   pure (M.PredStep predKey mx children')
 
 
