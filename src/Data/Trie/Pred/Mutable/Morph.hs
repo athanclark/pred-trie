@@ -27,12 +27,12 @@ toMutableRooted :: ( Eq k
                    , Typeable s
                    , Typeable k
                    , Typeable a
-                   ) => PredSet s k
-                     -> RootedPredTrie k a
+                   ) => RootedPredTrie k a
                      -> ST s (RootedHashTableTrie s k a)
-toMutableRooted predSet (RootedPredTrie mx xs) = do
+toMutableRooted (RootedPredTrie mx xs) = do
+  predSet <- HS.new
   xs' <- toMutable predSet xs
-  pure $! RootedHashTableTrie mx xs'
+  pure $! RootedHashTableTrie mx xs' predSet
 
 toMutable :: ( Eq k
              , Hashable k

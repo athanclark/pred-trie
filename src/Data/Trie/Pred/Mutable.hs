@@ -208,25 +208,36 @@ matches predSet (k:|ks) (HashTableTrie raw preds) = do
 -- * Rooted
 
 data RootedHashTableTrie s k a = RootedHashTableTrie
-  { rootedBase :: !(Maybe a)
-  , rootedSub  :: !(HashTableTrie s k a)
+  { rootedBase    :: !(Maybe a)
+  , rootedSub     :: !(HashTableTrie s k a)
+  , rootedPredSet :: {-# UNPACK #-} !(PredSet s k)
   }
 
 newR :: ST s (RootedHashTableTrie s k a)
-newR = RootedHashTableTrie Nothing <$> new
+newR = RootedHashTableTrie Nothing <$> new <*> HS.new
+
+lookupR :: ( Eq k
+           , Hashable k
+           , Typeable s
+           , Typeable k
+           , Typeable a
+           ) => [k]
+             -> RootedHashTableTrie s k a
+             -> ST s (Maybe a)
+lookupR [] (RootedHashTableTrie mx _ _) = pure mx
+lookupR (k:ks) (RootedHashTableTrie _ xs predSet) = lookup predSet (k:|ks) xs
 
 matchR :: ( Eq k
           , Hashable k
           , Typeable s
           , Typeable k
           , Typeable a
-          ) => PredSet s k
-            -> [k]
+          ) => [k]
             -> RootedHashTableTrie s k a
             -> ST s (Maybe ([k],a,[k]))
-matchR _ [] (RootedHashTableTrie mx _) =
+matchR [] (RootedHashTableTrie mx _ _) =
   pure $! (\x -> ([],x,[])) <$> mx
-matchR predSet (k:ks) (RootedHashTableTrie mx xs) = do
+matchR (k:ks) (RootedHashTableTrie mx xs predSet) = do
   mFoundThere <- match predSet (k:|ks) xs
   pure $! getFirst $
       First ((\(pre,x,suff) -> (toList pre,x,suff)) <$> mFoundThere)
@@ -238,13 +249,12 @@ matchesR :: ( Eq k
             , Typeable s
             , Typeable k
             , Typeable a
-            ) => PredSet s k
-              -> [k]
+            ) => [k]
               -> RootedHashTableTrie s k a
               -> ST s [([k],a,[k])]
-matchesR _ [] (RootedHashTableTrie mx _) =
+matchesR [] (RootedHashTableTrie mx _ _) =
   pure $! fromMaybe [] $ (\x -> [([],x,[])]) <$> mx
-matchesR predSet (k:ks) (RootedHashTableTrie mx xs) = do
+matchesR (k:ks) (RootedHashTableTrie mx xs predSet) = do
   foundThere <- matches predSet (k:|ks) xs
   pure $! foundHere ++ (allowRoot <$> foundThere)
   where
