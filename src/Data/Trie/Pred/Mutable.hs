@@ -6,6 +6,7 @@ module Data.Trie.Pred.Mutable where
 
 import Prelude hiding (lookup)
 import Data.Monoid
+import Data.Maybe (fromMaybe)
 import Data.Foldable (foldlM)
 import Data.Typeable
 
@@ -125,25 +126,79 @@ match predSet (k:|ks) (HashTableTrie raw preds) = do
       case mx' of
         Nothing -> pure Nothing
         Just (RawValue mx children) ->
-          let mFoundHere = (\x -> (k:|[], x, [])) <$> mx
+          let mFoundHere = (\x -> (k:|[], x, ks)) <$> mx
+              prependAncestry (pre,x,suff) = (k:|toList pre,x,suff)
           in case ks of
             [] -> pure mFoundHere
             (k':ks') -> do
               mFoundThere <- match predSet (k':|ks') children
-              pure $! getFirst $ First mFoundThere <> First mFoundHere
+              pure $! getFirst $
+                   First (prependAncestry <$> mFoundThere)
+                <> First mFoundHere
 
     goPred (PredStep predKey mx children) = do
       mr' <- HS.lookup predKey k predSet
       case mr' of
         Nothing -> pure Nothing
         Just r  ->
-          let mFoundHere = (\x -> (k:|[], x r, [])) <$> mx
+          let mFoundHere = (\x -> (k:|[], x r, ks)) <$> mx
+              prependAncestryAndApply (pre,f,suff) =
+                (k:|toList pre,f r,suff)
           in case ks of
             [] -> pure mFoundHere
             (k':ks') -> do
               mFoundThere <- match predSet (k':|ks') children
               pure $! getFirst $
-                   First ((\(pre, f, suff) ->
-                             (pre, f r, suff)
-                          ) <$> mFoundThere)
+                   First (prependAncestryAndApply <$> mFoundThere)
                 <> First mFoundHere
+
+matches :: ( Eq k
+           , Hashable k
+           , Typeable s
+           , Typeable k
+           ) => PredSet s k
+             -> NonEmpty k
+             -> HashTableTrie s k a
+             -> ST s [(NonEmpty k, a, [k])]
+matches predSet (k:|ks) (HashTableTrie raw preds) = do
+  mLit <- goLit raw
+  case mLit of
+    Just lit -> pure lit
+    Nothing ->
+      let go solution@(Just _) _ = pure solution
+          go Nothing pred        = goPred pred
+      in  fromMaybe [] <$> foldlM go Nothing preds
+  where
+    goLit xs = do
+      mx' <- HT.lookup raw k
+      case mx' of
+        Nothing -> pure Nothing
+        Just (RawValue mx children) ->
+          let mFoundHere = (\x -> [(k:|[], x, ks)]) <$> mx
+              prependAncestry (pre,x,suff) = (k:|toList pre, x, suff)
+          in case ks of
+            [] -> pure mFoundHere
+            (k':ks') ->
+              case mFoundHere of
+                Nothing -> pure Nothing
+                Just foundHere -> do
+                  foundThere <- matches predSet (k':|ks') children
+                  pure . Just $! foundHere ++ (prependAncestry <$> foundThere)
+
+
+    goPred (PredStep predKey mx children) = do
+      mr <- HS.lookup predKey k predSet
+      case mr of
+        Nothing -> pure Nothing
+        Just r  ->
+          let mFoundHere = (\f -> [(k:|[],f r,ks)]) <$> mx
+              prependAncestryAndApply (pre,f,suff) =
+                (k:|toList pre,f r,suff)
+          in case ks of
+            [] -> pure mFoundHere
+            (k':ks') ->
+              case mFoundHere of
+                Nothing -> pure Nothing
+                Just foundHere -> do
+                  foundThere <- matches predSet (k':|ks') children
+                  pure . Just $! foundHere ++ (prependAncestryAndApply <$> foundThere)
