@@ -21,6 +21,17 @@ import Data.Proxy
 import Data.STRef
 
 
+toMutableRooted :: ( Eq k
+                   , Hashable k
+                   , Ord k
+                   , Typeable s
+                   , Typeable k
+                   , Typeable a
+                   ) => RootedPredTrie k a
+                     -> ST s (RootedHashTableTrie s k a)
+toMutableRooted (RootedPredTrie mx xs) = do
+  xs' <- toMutable xs
+  pure $! RootedHashTableTrie mx xs'
 
 toMutable :: ( Eq k
              , Hashable k
