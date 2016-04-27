@@ -20,6 +20,8 @@ import Control.Monad.ST
 import Data.Hashable
 
 
+-- * Tail
+
 data PredStep s k r = forall a. Typeable a => PredStep
   { predPred :: {-# UNPACK #-} !(PredKey s k a)
   , predData :: !(Maybe (a -> r))
@@ -202,6 +204,8 @@ matches predSet (k:|ks) (HashTableTrie raw preds) = do
                   foundThere <- matches predSet (k':|ks') children
                   pure . Just $! foundHere ++ (prependAncestryAndApply <$> foundThere)
 
+
+-- * Rooted
 
 data RootedHashTableTrie s k a = RootedHashTableTrie
   { rootedBase :: !(Maybe a)
