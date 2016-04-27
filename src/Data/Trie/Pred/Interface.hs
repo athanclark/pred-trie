@@ -90,7 +90,8 @@ import Control.Monad.Writer
 
 newtype PTBuilderT k v m a = PTBuilderT
   { runPTBuilderT :: StateT (RootedPredTrie k v) m a
-  } deriving (Functor, Applicative, Monad, MonadTrans, MonadState (RootedPredTrie k v))
+  } deriving ( Functor, Applicative, Monad, MonadTrans
+             , MonadState (RootedPredTrie k v))
 
 instance ( Monad m
          , Eq k

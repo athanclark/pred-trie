@@ -5,6 +5,9 @@
 module Data.Trie.Pred.Mutable where
 
 import Prelude hiding (lookup)
+import Data.Monoid
+import Data.Foldable (foldlM)
+import Data.Typeable
 
 import Data.List.NonEmpty hiding (insert)
 
@@ -14,8 +17,6 @@ import           Data.PredSet.Mutable (PredSet, PredKey)
 import qualified Data.PredSet.Mutable as HS
 import Control.Monad.ST
 import Data.Hashable
-import Data.Foldable (foldlM)
-import Data.Typeable
 
 
 data PredStep s k r = forall a. Typeable a => PredStep
@@ -100,3 +101,49 @@ lookup predSet (k:|ks) (HashTableTrie raw preds) = do
                     mf <- lookup predSet (k':|ks') children
                     pure $! ($ x) <$> mf
       in  foldlM go Nothing preds
+
+
+match :: ( Eq k
+         , Hashable k
+         , Typeable s
+         , Typeable k
+         ) => PredSet s k
+           -> NonEmpty k
+           -> HashTableTrie s k a
+           -> ST s (Maybe (NonEmpty k, a, [k]))
+match predSet (k:|ks) (HashTableTrie raw preds) = do
+  mLit <- goLit raw
+  case mLit of
+    Just _  -> pure mLit
+    Nothing ->
+      let go solution@(Just _) _ = pure solution
+          go Nothing pred        = goPred pred
+      in  foldlM go Nothing preds
+  where
+    goLit xs = do
+      mx' <- HT.lookup raw k
+      case mx' of
+        Nothing -> pure Nothing
+        Just (RawValue mx children) ->
+          let mFoundHere = (\x -> (k:|[], x, [])) <$> mx
+          in case ks of
+            [] -> pure mFoundHere
+            (k':ks') -> do
+              mFoundThere <- match predSet (k':|ks') children
+              pure $! getFirst $ First mFoundThere <> First mFoundHere
+
+    goPred (PredStep predKey mx children) = do
+      mr' <- HS.lookup predKey k predSet
+      case mr' of
+        Nothing -> pure Nothing
+        Just r  ->
+          let mFoundHere = (\x -> (k:|[], x r, [])) <$> mx
+          in case ks of
+            [] -> pure mFoundHere
+            (k':ks') -> do
+              mFoundThere <- match predSet (k':|ks') children
+              pure $! getFirst $
+                   First ((\(pre, f, suff) ->
+                             (pre, f r, suff)
+                          ) <$> mFoundThere)
+                <> First mFoundHere
