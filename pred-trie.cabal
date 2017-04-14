@@ -32,7 +32,7 @@ Library
                       , semigroups
                       , tries >= 0.0.4
                       , unordered-containers
-                      , QuickCheck
+                      , QuickCheck >= 2.9.2
 
 Test-Suite spec
   Type:                 exitcode-stdio-1.0

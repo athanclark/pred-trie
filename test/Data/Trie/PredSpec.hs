@@ -21,8 +21,6 @@ import Test.Tasty
 import Test.Tasty.QuickCheck as QC
 
 
-instance Arbitrary a => Arbitrary (NonEmpty a) where
-  arbitrary = (:|) <$> arbitrary <*> arbitrary
 
 predSpec :: TestTree
 predSpec = testGroup "Data.Trie.Pred"
