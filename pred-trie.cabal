@@ -1,97 +1,114 @@
-Name:                   pred-trie
-Version:                0.5.1.2
-Author:                 Athan Clark <athan.clark@gmail.com>
-Maintainer:             Athan Clark <athan.clark@gmail.com>
-License:                BSD3
-License-File:           LICENSE
-Category:               Data
-Synopsis:               Predicative tries
--- Description:
-Cabal-Version:          >= 1.10
-Build-Type:             Simple
+-- This file has been generated from package.yaml by hpack version 0.21.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: f26559f76aae89fad9fe87fd25894fb71ded746440ac54961b4e1a5837de40ea
 
-Library
-  Default-Language:     Haskell2010
-  HS-Source-Dirs:       src
-  GHC-Options:          -Wall
-  Exposed-Modules:      Data.Trie.Pred
-                        Data.Trie.Pred.Base
-                        Data.Trie.Pred.Base.Step
-                        Data.Trie.Pred.Interface
-                        Data.Trie.Pred.Interface.Types
-                        Data.Trie.Pred.Mutable
-                        Data.Trie.Pred.Mutable.Morph
-  Build-Depends:        base >= 4.8 && < 5
-                      , composition-extra >= 2.0.0
-                      , containers
-                      , hashable
-                      , hashtables
-                      , mtl
-                      , poly-arity >= 0.0.7
-                      , pred-set
-                      , semigroups
-                      , tries >= 0.0.4
-                      , unordered-containers
-                      , QuickCheck >= 2.9.2
+name:           pred-trie
+version:        0.6.0
+synopsis:       Predicative tries
+description:    Please see the README on Github at <https://git.localcooking.com/tooling/pred-trie#readme>
+category:       Data
+author:         Athan Clark
+maintainer:     athan.clark@localcooking.com
+copyright:      2018 Athan Clark
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-Test-Suite spec
-  Type:                 exitcode-stdio-1.0
-  Default-Language:     Haskell2010
-  Hs-Source-Dirs:       src
-                      , test
-  Ghc-Options:          -Wall -threaded
-  Main-Is:              Spec.hs
-  Other-Modules:        Data.Trie.PredSpec
-                        Data.Trie.Pred
-                        Data.Trie.Pred.Base
-                        Data.Trie.Pred.Base.Step
-                        Data.Trie.Pred.Interface
-                        Data.Trie.Pred.Interface.Types
-  Build-Depends:        base
-                      , attoparsec
-                      , composition-extra
-                      , deepseq
-                      , errors
-                      , hashable
-                      , mtl
-                      , poly-arity
-                      , semigroups
-                      , text
-                      , tries
-                      , unordered-containers
-                      , tasty
-                      , tasty-quickcheck
-                      , tasty-hunit
-                      , QuickCheck
-                      , quickcheck-instances
+extra-source-files:
+    README.md
 
-Benchmark bench
-  Type:                 exitcode-stdio-1.0
-  Default-Language:     Haskell2010
-  Main-Is:              Bench.hs
-  Other-Modules:        Data.Trie.Pred
-                        Data.Trie.Pred.Base
-                        Data.Trie.Pred.Base.Step
-                        Data.Trie.Pred.Interface
-                        Data.Trie.Pred.Interface.Types
-  HS-Source-Dirs:       bench
-                      , src
-  Ghc-Options:          -Wall -threaded
-  Build-Depends:        base
-                      , attoparsec
-                      , composition-extra
-                      , deepseq
-                      , hashable
-                      , mtl
-                      , poly-arity
-                      , semigroups
-                      , text
-                      , tries
-                      , unordered-containers
-                      , QuickCheck
-                      , sets
-                      , criterion
+source-repository head
+  type: git
+  location: git://git.localcooking.com/tooling/pred-trie.git
 
-Source-Repository head
-  Type:                 git
-  Location:             https://github.com/athanclark/pred-trie.git
+library
+  exposed-modules:
+      Data.Trie.Pred
+      Data.Trie.Pred.Base
+      Data.Trie.Pred.Base.Step
+      Data.Trie.Pred.Interface
+      Data.Trie.Pred.Interface.Types
+  other-modules:
+      Paths_pred_trie
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck >=2.9.2
+    , base >=4.8 && <5.0
+    , containers
+    , deepseq
+    , hashable
+    , hashtables
+    , mtl
+    , poly-arity >=0.0.7
+    , pred-set
+    , semigroups
+    , strict
+    , tries >=0.0.5
+    , unordered-containers
+  default-language: Haskell2010
+
+test-suite pred-trie-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Data.Trie.PredSpec
+      Paths_pred_trie
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
+  build-depends:
+      QuickCheck >=2.9.2
+    , attoparsec
+    , base
+    , containers
+    , deepseq
+    , errors
+    , hashable
+    , hashtables
+    , mtl
+    , poly-arity >=0.0.7
+    , pred-set
+    , pred-trie
+    , semigroups
+    , strict
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , text
+    , tries >=0.0.5
+    , unordered-containers
+  default-language: Haskell2010
+
+benchmark pred-trie-bench
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_pred_trie
+  hs-source-dirs:
+      bench
+  ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
+  build-depends:
+      QuickCheck >=2.9.2
+    , attoparsec
+    , base
+    , containers
+    , criterion
+    , deepseq
+    , hashable
+    , hashtables
+    , mtl
+    , poly-arity >=0.0.7
+    , pred-set
+    , pred-trie
+    , semigroups
+    , sets
+    , strict
+    , text
+    , tries >=0.0.5
+    , unordered-containers
+  default-language: Haskell2010

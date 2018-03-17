@@ -1,0 +1,75 @@
+name:                pred-trie
+version:             0.6.0
+git:                 "git://git.localcooking.com/tooling/pred-trie.git"
+license:             BSD3
+author:              "Athan Clark"
+maintainer:          "athan.clark@localcooking.com"
+copyright:           "2018 Athan Clark"
+category:            Data
+synopsis:            Predicative tries
+
+ghc-options: -Wall
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://git.localcooking.com/tooling/pred-trie#readme>
+
+dependencies:
+  - base >= 4.8 && < 5.0
+  - containers
+  - deepseq
+  - hashable
+  - hashtables
+  - mtl
+  - poly-arity >= 0.0.7
+  - pred-set
+  - semigroups
+  - strict
+  - tries >= 0.0.5
+  - unordered-containers
+  - QuickCheck >= 2.9.2
+
+library:
+  source-dirs: src
+
+tests:
+  pred-trie-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -Wall
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - pred-trie
+    - attoparsec
+    - errors
+    - text
+    - tasty
+    - tasty-quickcheck
+    - tasty-hunit
+
+benchmarks:
+  pred-trie-bench:
+    main:                Main.hs
+    source-dirs:         bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -Wall
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - pred-trie
+    - attoparsec
+    - criterion
+    - sets
+    - text

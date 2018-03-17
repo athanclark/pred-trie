@@ -6,30 +6,30 @@ module Main where
 
 
 import Prelude hiding (lookup)
-import           Data.Trie.Pred.Base
-import           Data.Trie.Pred.Base.Step (PredStep (..), PredSteps (..))
-import           Data.Trie.Class
+import           Data.Trie.Pred.Base (PredTrie (..), RootedPredTrie (..))
+import           Data.Trie.Pred.Base.Step (PredStep (..), Pred (..))
+import           Data.Trie.Class (Trie (lookup, insert, delete))
 import           Data.Trie.HashMap (HashMapStep (..), HashMapChildren (..))
-import qualified Data.HashMap.Lazy as HM
-import           Data.List.NonEmpty
+import qualified Data.HashMap.Strict as HM
+import           Data.List.NonEmpty ()
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
-import           Data.Attoparsec.Text
-import           Criterion.Main
+import           Data.Attoparsec.Text (parseOnly, double)
+import           Criterion.Main (defaultMain, whnf, bench, bgroup)
 import           Data.Set.Class as Sets
 
 
 doubleLit :: RootedPredTrie T.Text Double
 doubleLit = RootedPredTrie Nothing $ PredTrie
               (HashMapStep $ unUnion $ foldMap (Union . genStep) [1..100])
-              (PredSteps [])
+              (PredStep HM.empty)
   where
     genStep n = HM.singleton (T.pack $ show n) $
                   HashMapChildren (Just n) Nothing
 
 doubleAtto :: RootedPredTrie T.Text Double
-doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredSteps
-  [PredStep "d" (eitherToMaybe . parseOnly double) (Just id) mempty]
+doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredStep $
+  HM.singleton "d" $ Pred (eitherToMaybe . parseOnly double) (Just id) mempty
   where
     eitherToMaybe (Left _) = Nothing
     eitherToMaybe (Right a) = Just a
@@ -37,10 +37,10 @@ doubleAtto = RootedPredTrie Nothing $ PredTrie mempty $ PredSteps
 deepLit :: RootedPredTrie T.Text Double
 deepLit = RootedPredTrie Nothing $ go 10
   where
-    go n | n == 0    = PredTrie (HashMapStep HM.empty) (PredSteps [])
+    go n | n == 0    = PredTrie (HashMapStep HM.empty) (PredStep HM.empty)
          | otherwise = PredTrie (HashMapStep $ HM.singleton (T.pack $ show n) $
                                                  HashMapChildren (Just n) (Just . go $ n-1))
-                                (PredSteps [])
+                                (PredStep HM.empty)
 
 main = defaultMain
   [ bgroup "Lit vs. Pred"

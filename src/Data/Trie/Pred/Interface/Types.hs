@@ -11,8 +11,8 @@
   , MultiParamTypeClasses
   , FunctionalDependencies
   , ConstraintKinds
-  , BangPatterns
   , OverloadedStrings
+  , OverloadedLists
   #-}
 
 
@@ -45,13 +45,13 @@ module Data.Trie.Pred.Interface.Types
 
 
 import Prelude hiding (pred)
-import           Data.Trie.Pred.Base
-import           Data.Trie.Pred.Base.Step
+import           Data.Trie.Pred.Base (RootedPredTrie (..), PredTrie (..), emptyPT)
+import           Data.Trie.Pred.Base.Step (Pred (..), PredStep (..))
 import qualified Data.Trie.HashMap as HT
 import qualified Data.HashMap.Lazy as HM
-import Data.Hashable
-import Data.Function.Poly
-import Data.Typeable
+import Data.Hashable (Hashable)
+import Data.Function.Poly (ArityTypeListIso)
+import Data.Typeable (Typeable)
 
 import Data.String (IsString (..))
 
@@ -95,8 +95,8 @@ instance ( Eq k
          , Hashable k
          , Typeable r
          ) => Extend (PathChunk k ('Just r)) (RootedPredTrie k (r -> a)) (RootedPredTrie k a) where
-  extend (Pred i q) (RootedPredTrie mx xs) = RootedPredTrie Nothing $
-    PredTrie mempty (PredSteps [PredStep i q mx xs])
+  extend (Pred' i q) (RootedPredTrie mx xs) = RootedPredTrie Nothing $
+    PredTrie mempty (PredStep (HM.singleton i (Pred q mx xs)))
 
 
 -- | @FoldR Extend start chunks ~ result@
@@ -132,16 +132,16 @@ only = Lit
 
 -- | Match with a predicate against the url chunk directly.
 pred :: k -> (k -> Maybe r) -> PathChunk k ('Just r)
-pred = Pred
+pred = Pred'
 
 
 -- | Constrained to AttoParsec, Regex-Compat and T.Text
 data PathChunk k (mx :: Maybe *) where
-  Lit  :: { litChunk :: !k
-          } -> PathChunk k 'Nothing
-  Pred :: { predTag  :: !k
-          , predPred :: !(k -> Maybe r)
-          } -> PathChunk k ('Just r)
+  Lit   :: { litChunk :: !k
+           } -> PathChunk k 'Nothing
+  Pred' :: { predTag  :: !k
+           , predPred :: !(k -> Maybe r)
+           } -> PathChunk k ('Just r)
 
 -- | Use raw strings instead of prepending @l@
 instance IsString k => IsString (PathChunk k 'Nothing) where
