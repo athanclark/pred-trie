@@ -183,6 +183,8 @@ data RootedPredTrie k a = RootedPredTrie
   , rootedSub  :: !(PredTrie k a) -- ^ The actual predicative trie
   } deriving (Show, Functor, Typeable)
 
+instance (NFData k, NFData a) => NFData (RootedPredTrie k a) where
+  rnf (RootedPredTrie mx xs) = rnf mx `seq` rnf xs
 
 instance ( Hashable k
          , Eq k

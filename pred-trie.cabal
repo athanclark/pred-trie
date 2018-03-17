@@ -2,13 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f26559f76aae89fad9fe87fd25894fb71ded746440ac54961b4e1a5837de40ea
+-- hash: 03b4ea47e57ecfda68de39c93f569f4b5f8a076b14a22dc5ba822e6d4c71cba9
 
 name:           pred-trie
-version:        0.6.0
+version:        0.6.0.1
 synopsis:       Predicative tries
 description:    Please see the README on Github at <https://git.localcooking.com/tooling/pred-trie#readme>
 category:       Data
+homepage:       https://github.com/athanclark/pred-trie#readme
+bug-reports:    https://github.com/athanclark/pred-trie/issues
 author:         Athan Clark
 maintainer:     athan.clark@localcooking.com
 copyright:      2018 Athan Clark
@@ -22,7 +24,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: git://git.localcooking.com/tooling/pred-trie.git
+  location: https://github.com/athanclark/pred-trie
 
 library
   exposed-modules:

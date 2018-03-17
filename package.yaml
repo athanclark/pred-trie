@@ -1,6 +1,6 @@
 name:                pred-trie
-version:             0.6.0
-git:                 "git://git.localcooking.com/tooling/pred-trie.git"
+version:             0.6.0.1
+github:              athanclark/pred-trie
 license:             BSD3
 author:              "Athan Clark"
 maintainer:          "athan.clark@localcooking.com"
