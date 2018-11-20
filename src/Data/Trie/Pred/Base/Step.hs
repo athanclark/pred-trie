@@ -28,6 +28,7 @@ import qualified Data.List.NonEmpty as NE
 
 import Data.Data (Typeable)
 import Data.Monoid (First (..), (<>))
+import Data.Semigroup (Semigroup)
 import Data.Maybe (maybe)
 import Data.Hashable (Hashable)
 import Data.HashMap.Strict (HashMap)
@@ -109,9 +110,13 @@ instance Trie NonEmpty s c => Trie NonEmpty s (PredStep k c) where
 
 instance ( Eq k
          , Hashable k
+         ) => Semigroup (PredStep k c s a) where
+  (<>) = unionPred
+
+instance ( Eq k
+         , Hashable k
          ) => Monoid (PredStep k c s a) where
   mempty  = PredStep HMS.empty
-  mappend = unionPred
 
 -- | overwrite on the right
 unionPred :: ( Eq k

@@ -107,10 +107,14 @@ instance ( Hashable k
 
 instance ( Hashable k
          , Eq k
+         ) => Semigroup (PredTrie k a) where
+  (PredTrie ls1 ps1) <> (PredTrie ls2 ps2) =
+    PredTrie (ls1 <> ls2) (ps1 <> ps2)
+
+instance ( Hashable k
+         , Eq k
          ) => Monoid (PredTrie k a) where
   mempty = PredTrie mempty mempty
-  mappend (PredTrie ls1 ps1) (PredTrie ls2 ps2) =
-    PredTrie (ls1 <> ls2) (ps1 <> ps2)
 
 emptyPT :: PredTrie k a
 emptyPT = PredTrie HT.empty (PredStep HMS.empty)
@@ -201,10 +205,15 @@ instance ( Hashable k
 
 instance ( Hashable k
          , Eq k
+         ) => Semigroup (RootedPredTrie k a) where
+  (RootedPredTrie mx xs) <> (RootedPredTrie my ys) = RootedPredTrie
+    (getLast (Last mx <> Last my)) (xs <> ys)
+
+
+instance ( Hashable k
+         , Eq k
          ) => Monoid (RootedPredTrie k a) where
   mempty = emptyRPT
-  mappend (RootedPredTrie mx xs) (RootedPredTrie my ys) = RootedPredTrie
-    (getLast (Last mx <> Last my)) (xs <> ys)
 
 
 emptyRPT :: RootedPredTrie k a

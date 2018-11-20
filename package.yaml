@@ -1,5 +1,5 @@
 name:                pred-trie
-version:             0.6.0.1
+version:             0.6.1
 github:              athanclark/pred-trie
 license:             BSD3
 author:              "Athan Clark"
@@ -18,10 +18,10 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on Github at <https://git.localcooking.com/tooling/pred-trie#readme>
+description:         Please see the README on Github at <https://github.com/athanclark/pred-trie#readme>
 
 dependencies:
-  - base >= 4.8 && < 5.0
+  - base >= 4.11 && < 5.0
   - containers
   - deepseq
   - hashable
@@ -31,7 +31,7 @@ dependencies:
   - pred-set
   - semigroups
   - strict
-  - tries >= 0.0.5
+  - tries >= 0.0.6
   - unordered-containers
   - QuickCheck >= 2.9.2
 
